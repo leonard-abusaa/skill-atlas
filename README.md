@@ -21,6 +21,12 @@ Claude reads the description of every enabled skill at the start of each convers
 
 ## Install
 
+### From Anthropic's plugin directory (in review)
+
+Skill Atlas has been submitted to Anthropic's plugin directory and is waiting for review. Once it's approved, you'll find it in the Claude app under **Customize → Plugins → Discover**: search for "Skill Atlas" and click **Add**. One install works in the Claude app and in Claude Code on the same account. Until then, use one of the options below.
+
+If you installed Skill Atlas another way before the listing went live, remove that copy after adding it from the directory, so you don't have it twice.
+
 ### Claude app (claude.ai, desktop)
 
 Add this repository as a plugin marketplace, then install from it. No downloads, and updates come straight from GitHub.
