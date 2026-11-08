@@ -89,11 +89,11 @@ The Claude Code collector (`scripts/collect_claude_code.py`):
 
 - is **read-only** and makes **no network calls**;
 - reads only names and descriptions from the top of skill, command and agent files, plus plugin and MCP configuration;
-- for MCP servers keeps only the name, the transport type and the command name or host;
+- for MCP servers keeps only the name, the transport type and the command name or host, and ignores every other key in `~/.claude.json`, including account details;
 - **never** keeps environment variables, headers, arguments, API keys, tokens, passwords or full URLs. Git remotes are stripped of any credentials;
 - writes one JSON file you can read before sharing it.
 
-The dashboard is published as a private artifact in your own Claude account. Nobody else can open it unless you share it.
+The dashboard is published as a private artifact in your own Claude account. Nobody else can open it unless you share it. When you open it, your browser loads the Poppins and Lora fonts from Google Fonts; that is the only outside request, and it carries no data from your setup.
 
 ## How it works
 

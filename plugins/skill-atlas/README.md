@@ -13,9 +13,16 @@ For each item it shows a plain one-line summary, example phrases that trigger it
 
 ## What it runs, reads and sends
 
-- `scripts/collect_claude_code.py` (Claude Code only, when you ask for "collect"): read-only, no network calls. It reads the name and description at the top of skill, command and agent files in `~/.claude`, `~/.agents/skills` and the current project's `.claude/` folder; installed plugin manifests; and the `mcpServers` entries in `~/.claude.json` and `.mcp.json`, from which it keeps only each server's name, transport type and command name or host. It never keeps environment variables, headers, arguments, tokens, passwords or full URLs, and strips credentials from git remotes. It writes one JSON file in your home folder.
-- `scripts/render.py`: validates the dashboard data and fills `assets/template.html`. No network calls.
-- The dashboard is published as a private artifact in your own Claude account. Nothing is sent anywhere else.
+- `scripts/collect_claude_code.py` runs only in Claude Code, when you ask for "collect". It is read-only and makes no network calls. It reads:
+  - the `name` and `description` at the top of skill, command and agent files in `~/.claude`, `~/.agents/skills` and the current project's `.claude/` folder;
+  - installed plugin manifests (`plugin.json`, `installed_plugins.json`, `settings.json` for which plugins are enabled);
+  - the `mcpServers` entries in `~/.claude.json` and the project's `.mcp.json`. From each server it keeps only the name, transport type, and command name or URL host. Every other key in `~/.claude.json`, including account details, is ignored. Environment variables, headers, arguments, tokens, passwords and full URLs are never kept, and credentials are stripped from git remotes.
+
+  It writes one JSON file, `~/claude-code-inventory.json`, which you choose whether to share.
+- `scripts/render.py` validates the dashboard data and fills `assets/template.html`. No network calls.
+- The dashboard is published as a private artifact in your own Claude account.
+- When you open the dashboard, your browser loads the Poppins and Lora fonts from Google Fonts (`fonts.googleapis.com`). That is the only outside request, and it carries no data from your setup.
+- The plugin has no code that sends data anywhere. The GitHub links in `plugin.json` are the project's homepage, not a destination for data.
 
 ## License
 

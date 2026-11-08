@@ -1,7 +1,7 @@
 {
   "name": "skill-atlas",
   "displayName": "Skill Atlas",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "A dashboard of every skill, plugin and MCP connector in your Claude app and Claude Code: grouped by domain, with when to use each, where each came from, overlaps and broken connectors.",
   "author": {
     "name": "Leonard Abu-Saa",
