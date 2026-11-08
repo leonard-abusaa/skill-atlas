@@ -1,8 +1,15 @@
-#!/usr/bin/env python3
+# Renderer
+
+Validates atlas-data.json and fills the template. No network calls.
+
+The skill extracts the code block below to `render.py` before running it. Source: `src/render.py` in the repository.
+
+<!-- file: render.py -->
+````python
 """Skill Atlas renderer.
 
 Validates an atlas-data.json file against the schema in reference/schema.md,
-fills in safe defaults, and injects it into assets/template.html.
+fills in safe defaults, and injects it into template.html (extracted next to this file).
 
 Usage:
   python3 render.py atlas-data.json [--out skill-atlas.html]
@@ -10,8 +17,8 @@ Exit code 1 means the data has errors that would break the page; the messages sa
 """
 import argparse, json, os, sys
 
+# render.py, template.html and categories.json sit together in the folder the skill extracts them to
 HERE = os.path.dirname(os.path.abspath(__file__))
-SKILL = os.path.dirname(HERE)
 KINDS = {"skill", "plugin", "connector"}
 SUBTYPES = {None, "command", "agent"}
 WORLDS = {"claude-app", "claude-code"}
@@ -27,7 +34,7 @@ def main():
     a = ap.parse_args()
 
     data = json.load(open(a.data, encoding="utf-8"))
-    cats = json.load(open(os.path.join(SKILL, "assets", "categories.json"), encoding="utf-8"))["categories"]
+    cats = json.load(open(os.path.join(HERE, "categories.json"), encoding="utf-8"))["categories"]
     cat_ids = {c["id"] for c in cats}
     errors, warnings = [], []
 
@@ -117,7 +124,7 @@ def main():
             print("error:", e, file=sys.stderr)
         sys.exit(1)
 
-    tpl = open(os.path.join(SKILL, "assets", "template.html"), encoding="utf-8").read()
+    tpl = open(os.path.join(HERE, "template.html"), encoding="utf-8").read()
     blob = json.dumps(data, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
     html = tpl.replace("__ATLAS_DATA__", blob, 1)
     with open(a.out, "w", encoding="utf-8") as f:
@@ -129,3 +136,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+````
