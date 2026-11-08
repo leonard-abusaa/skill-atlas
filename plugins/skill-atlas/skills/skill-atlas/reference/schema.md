@@ -1,6 +1,6 @@
 # atlas-data.json
 
-The file `scripts/render.py` turns into the dashboard. Write it as UTF-8 JSON.
+The file `render.py` (extracted in step 0) turns into the dashboard. Write it as UTF-8 JSON.
 `render.py` fills `categories` from `assets/categories.json` and adds defaults, so you don't write those.
 
 ## Top level

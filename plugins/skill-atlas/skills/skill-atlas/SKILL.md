@@ -12,18 +12,46 @@ Two modes:
 
 Files in this skill's folder (the folder this SKILL.md is in):
 
-- `scripts/collect_claude_code.py`: read-only scanner for Claude Code
-- `scripts/render.py`: validates the data and fills the dashboard template
-- `assets/template.html`: the dashboard. Never edit it during a build; every user gets the same page.
+- `scripts/collect_claude_code.md`: holds the read-only Claude Code scanner, `collect_claude_code.py`
+- `scripts/render.md`: holds `render.py`, which validates the data and fills the dashboard template
+- `assets/template.md`: holds `template.html`, the dashboard. Never edit it during a build; every user gets the same page.
 - `assets/categories.json`: the fixed list of 14 domains
 - `reference/schema.md`: the data format. Read it before writing data.
+
+The code ships inside Markdown files so the plugin contains only text. Extract it before running anything.
+
+## Step 0: extract the bundled files
+
+Run this once per conversation, with the skill folder's real path in place of `SKILL_FOLDER`. It writes `template.html`, `collect_claude_code.py`, `render.py` and `categories.json` into a temporary folder and prints that folder's path. Below, `<work>` means that path.
+
+```
+python3 - SKILL_FOLDER <<'EOF'
+import os, re, shutil, sys, tempfile
+skill = sys.argv[1]
+work = os.path.join(tempfile.gettempdir(), "skill-atlas")
+os.makedirs(work, exist_ok=True)
+for sub in ("assets", "scripts"):
+    for name in os.listdir(os.path.join(skill, sub)):
+        path = os.path.join(skill, sub, name)
+        if name.endswith(".md"):
+            text = open(path, encoding="utf-8").read()
+            m = re.search(r"<!-- file: (\S+) -->\n````[a-z]*\n(.*?)\n````", text, re.S)
+            if m:
+                open(os.path.join(work, m.group(1)), "w", encoding="utf-8").write(m.group(2) + "\n")
+        elif name.endswith(".json"):
+            shutil.copy(path, work)
+print(work)
+EOF
+```
+
+On Windows, use `python` or `py` instead of `python3`.
 
 ## Collect mode (Claude Code)
 
 1. Run the collector with Python 3 (`python3`; on Windows `python` or `py`):
 
    ```
-   python3 <skill folder>/scripts/collect_claude_code.py
+   python3 <work>/collect_claude_code.py
    ```
 
    Run it from the project folder the user is working in; the script includes the current folder's `.claude/` by default. If the user named a folder holding several projects, add `--projects-root <folder>`.
@@ -31,7 +59,7 @@ Files in this skill's folder (the folder this SKILL.md is in):
 2. Show the summary line it prints and where it wrote the file (default `~/claude-code-inventory.json`).
 3. Next step, in one sentence: attach that file in a Claude app chat and say "Refresh my Skill Atlas". If you are able to publish artifacts here, offer to build the dashboard right away instead (Build mode, with only the Claude Code half).
 
-If Python isn't available, don't install it. Collect the same data yourself, read-only, in the shape the script writes (see its `out` object): frontmatter `name` and `description` of every `SKILL.md`, command and agent file in `~/.claude/{skills,commands,agents}`, `~/.agents/skills` and the project's `.claude/`; plugins from `~/.claude/plugins/installed_plugins.json` and each install path's `.claude-plugin/plugin.json`; MCP servers from the `mcpServers` entries in `~/.claude.json` (top level and under `projects`) and `./.mcp.json`, keeping only the name, transport, command basename or URL host. Ignore every other key in `~/.claude.json`; it also holds account details you must not read out.
+If Python isn't available, don't install it. Collect the same data yourself, read-only, in the shape the script writes (see the `out` object in `scripts/collect_claude_code.md`): frontmatter `name` and `description` of every `SKILL.md`, command and agent file in `~/.claude/{skills,commands,agents}`, `~/.agents/skills` and the project's `.claude/`; plugins from `~/.claude/plugins/installed_plugins.json` and each install path's `.claude-plugin/plugin.json`; MCP servers from the `mcpServers` entries in `~/.claude.json` (top level and under `projects`) and `./.mcp.json`, keeping only the name, transport, command basename or URL host. Ignore every other key in `~/.claude.json`; it also holds account details you must not read out.
 
 Never record environment variables, headers, arguments, tokens, API keys, passwords or full URLs, even if asked.
 
@@ -85,7 +113,7 @@ To keep cost down on large inventories, enrich in batches by plugin or folder, a
 ### 5. Render and publish
 
 ```
-python3 <skill folder>/scripts/render.py atlas-data.json --out skill-atlas.html
+python3 <work>/render.py atlas-data.json --out skill-atlas.html
 ```
 
 Fix any `error:` lines and run again. Warnings are fine to leave.
@@ -102,4 +130,4 @@ Two or three sentences: what the page covers, the most useful finding (for examp
 - Read-only. Never disable, uninstall or reconnect anything yourself; the dashboard only suggests.
 - Never put secrets, tokens, email addresses or file contents beyond names and descriptions into the data.
 - Never present an inferred origin as confirmed.
-- The dashboard's look is fixed by `assets/template.html`. Don't restyle it per user.
+- The dashboard's look is fixed by the template in `assets/template.md`. Don't restyle it per user.
