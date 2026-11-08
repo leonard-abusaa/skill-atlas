@@ -28,6 +28,7 @@ Add this repository as a plugin marketplace, then install from it. No downloads,
 1. Open **Customize → Plugins**, click **Add**, then **Add marketplace → Add from a repository**.
 2. Enter `leonard-abusaa/skill-atlas`.
 3. Install **Skill Atlas** from the new marketplace.
+4. Open a new chat and say **"Refresh my Skill Atlas"**. You can also call it directly as `/skill-atlas:skill-atlas`.
 
 A plugin you add in the Claude app also loads in Claude Code when you're signed in to the same account, so one install covers both.
 
@@ -59,6 +60,11 @@ cp -R skill-atlas/plugins/skill-atlas/skills/skill-atlas ~/.claude/skills/
 ```
 
 Start a new Claude Code session after installing.
+
+## Update
+
+- **Claude Code:** `claude plugin update skill-atlas@skill-atlas`. New versions install when the plugin's version number changes.
+- **Claude app:** plugins from a marketplace you added follow the repository. If a new version doesn't show up, remove and add the plugin again under **Customize → Plugins**.
 
 ## Use
 
