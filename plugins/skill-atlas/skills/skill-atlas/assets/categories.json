@@ -1,0 +1,89 @@
+{
+ "_comment": "Fixed list. Assign every item exactly one of these ids. Do not add, rename or reorder categories.",
+ "categories": [
+  {
+   "id": "engineering",
+   "label": "Engineering & code",
+   "blurb": "Building, testing, debugging and shipping software",
+   "useFor": "code, APIs, testing, debugging, git, SDKs, dev tools, app integrations like RevenueCat or Firebase"
+  },
+  {
+   "id": "design",
+   "label": "Design & media",
+   "blurb": "Interfaces, visual design, brand and images",
+   "useFor": "UI/UX, visual design, brand look, images, video, Figma, Canva"
+  },
+  {
+   "id": "documents",
+   "label": "Files & documents",
+   "blurb": "Docs, decks, spreadsheets and PDFs",
+   "useFor": "creating or reading Word, PDF, PowerPoint, Excel, Google Drive files"
+  },
+  {
+   "id": "browser",
+   "label": "Browser & computer",
+   "blurb": "Acting on websites and apps on your computer",
+   "useFor": "browser control, computer use, desktop apps"
+  },
+  {
+   "id": "agents",
+   "label": "AI models & agents",
+   "blurb": "Skills, plugins, connectors and agent setup",
+   "useFor": "building skills, plugins, MCP servers, agent setup, onboarding, importing memory"
+  },
+  {
+   "id": "productivity",
+   "label": "Productivity & memory",
+   "blurb": "Tasks, inbox, calendar, briefs and memory",
+   "useFor": "tasks, email, calendar, daily briefs, notes, memory files, Jira/Confluence"
+  },
+  {
+   "id": "research",
+   "label": "Research & reference",
+   "blurb": "Web research and reference knowledge",
+   "useFor": "web research, documentation lookup, learning resources, customer or market research"
+  },
+  {
+   "id": "data",
+   "label": "Data & reports",
+   "blurb": "Recurring reports, KPIs and analytics",
+   "useFor": "analytics, KPIs, dashboards, recurring reports, tracking setup"
+  },
+  {
+   "id": "finance",
+   "label": "Finance & accounting",
+   "blurb": "Cash, bills, invoices, payroll, books and tax",
+   "useFor": "cash flow, bills, invoices, payroll, bookkeeping, tax, personal finance data"
+  },
+  {
+   "id": "sales",
+   "label": "Sales & CRM",
+   "blurb": "Leads, prospects, outreach and pipeline",
+   "useFor": "leads, prospecting, cold outreach, CRM, pipeline, sales collateral, pricing"
+  },
+  {
+   "id": "marketing",
+   "label": "Marketing & content",
+   "blurb": "Content, campaigns, SEO, ads and reputation",
+   "useFor": "copy, content, campaigns, SEO, paid ads, CRO, email marketing, social, reviews"
+  },
+  {
+   "id": "legal",
+   "label": "Legal & compliance",
+   "blurb": "Contracts, NDAs, risk and compliance",
+   "useFor": "contracts, NDAs, compliance, legal risk, e-signature"
+  },
+  {
+   "id": "support",
+   "label": "Customer support",
+   "blurb": "Tickets, replies, escalations and help articles",
+   "useFor": "tickets, customer replies, escalations, knowledge base"
+  },
+  {
+   "id": "operations",
+   "label": "Hiring & operations",
+   "blurb": "Hiring, proposals, inventory and grants",
+   "useFor": "hiring, proposals and quotes, inventory, purchasing, grants"
+  }
+ ]
+}

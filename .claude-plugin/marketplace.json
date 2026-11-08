@@ -1,0 +1,12 @@
+{
+  "name": "skill-atlas",
+  "description": "Skill Atlas: see everything Claude can use for you.",
+  "owner": { "name": "Leonard Abu-Saa" },
+  "plugins": [
+    {
+      "name": "skill-atlas",
+      "source": "./plugins/skill-atlas",
+      "description": "Dashboard of your skills, plugins and MCP connectors, with overlaps, origins and broken connectors."
+    }
+  ]
+}

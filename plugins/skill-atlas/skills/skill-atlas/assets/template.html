@@ -1,0 +1,1107 @@
+<title>Skill Atlas</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;1,400&family=Poppins:wght@400;500;600&display=swap">
+<style>
+/* Layout: a reference atlas. Header + status strip, domain cards to browse, a scannable list, detail opens in a side panel. */
+:root {
+  --bg: #faf9f5;
+  --surface: #ffffff;
+  --sunken: #f0eee6;
+  --line: #e8e6dc;
+  --line-strong: #d6d3c6;
+  --fg: #141413;
+  --muted: #6e6c64;
+  --faint: #b0aea5;
+  --accent: #d97757;
+  --accent-ink: #b5573a;
+  --accent-soft: #f6e4dc;
+  --blue: #6a9bcc;
+  --blue-soft: #e3ecf5;
+  --green: #788c5d;
+  --green-soft: #e7ebdf;
+  --warn: #a8741a;
+  --warn-soft: #f5ead2;
+  --crit: #b4483d;
+  --crit-soft: #f6dfdb;
+  --shadow: 0 1px 2px rgba(20,20,19,.05), 0 8px 24px rgba(20,20,19,.06);
+  --font-head: "Poppins", "Helvetica Neue", Arial, sans-serif;
+  --font-body: "Lora", Georgia, "Times New Roman", serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --r: 12px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #1f1e1d; --surface: #272624; --sunken: #191817; --line: #34332f; --line-strong: #4a4843;
+    --fg: #faf9f5; --muted: #b0aea5; --faint: #77756e;
+    --accent: #d97757; --accent-ink: #e8936f; --accent-soft: #3d2a22;
+    --blue: #8db4dc; --blue-soft: #233140; --green: #9fb582; --green-soft: #2a3122;
+    --warn: #dbab55; --warn-soft: #3a2f1a; --crit: #e07d70; --crit-soft: #3f2420;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 30px rgba(0,0,0,.35);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #1f1e1d; --surface: #272624; --sunken: #191817; --line: #34332f; --line-strong: #4a4843;
+  --fg: #faf9f5; --muted: #b0aea5; --faint: #77756e;
+  --accent: #d97757; --accent-ink: #e8936f; --accent-soft: #3d2a22;
+  --blue: #8db4dc; --blue-soft: #233140; --green: #9fb582; --green-soft: #2a3122;
+  --warn: #dbab55; --warn-soft: #3a2f1a; --crit: #e07d70; --crit-soft: #3f2420;
+  --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 30px rgba(0,0,0,.35);
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg);
+  font-family: var(--font-body); font-size: 15px; line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+html { scroll-behavior: smooth; }
+section[id], [id$="-wrap"] { scroll-margin-top: 16px; }
+
+/* App shell: sidebar + main */
+.shell { --side-w: var(--side-open-w, 300px); display: grid; grid-template-columns: var(--side-w) minmax(0, 1fr); min-height: 100vh; }
+.shell.collapsed { --side-w: 68px; }
+.side {
+  position: sticky; top: 0; height: 100vh; align-self: start; z-index: 30;
+  background: var(--sunken); border-right: 1px solid var(--line);
+  display: flex; flex-direction: column; overflow: hidden;
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.side-resizer { position: absolute; top: 0; right: -3px; bottom: 0; width: 7px; cursor: col-resize; z-index: 2; touch-action: none; }
+.side-resizer::after { content: ""; position: absolute; top: 0; bottom: 0; left: 3px; width: 1px; background: transparent; transition: background .15s; }
+.side-resizer:hover::after, .side-resizer:focus-visible::after, .shell.resizing .side-resizer::after { background: var(--accent); width: 2px; }
+.side-resizer:focus-visible { outline: none; }
+.shell.resizing, .shell.resizing * { cursor: col-resize !important; user-select: none !important; }
+.shell.collapsed .side-resizer { display: none; }
+.side-head { display: flex; align-items: center; gap: 10px; padding: 18px 14px 14px 18px; }
+.side-head .mark { width: 20px; height: 20px; }
+.side-title { font-family: var(--font-head); font-weight: 600; font-size: 15px; flex: 1; white-space: nowrap; }
+.icon-btn { border: 0; background: transparent; width: 32px; height: 32px; border-radius: 8px; cursor: pointer; display: grid; place-items: center; color: var(--muted); flex: none; }
+.icon-btn:hover { background: var(--line); color: var(--fg); }
+.icon-btn svg { width: 18px; height: 18px; }
+.nav { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 4px 10px 12px; display: flex; flex-direction: column; gap: 2px; }
+.nav-label { font-family: var(--font-head); font-size: 11px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--faint); padding: 14px 10px 6px; white-space: nowrap; }
+.nav-item {
+  display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; cursor: pointer;
+  border: 0; background: transparent; border-radius: 8px; padding: 8px 10px; min-height: 38px;
+  font-family: var(--font-head); font-size: 14px; font-weight: 500; color: var(--fg);
+}
+.nav-item:hover { background: var(--line); }
+.nav-item[aria-current="true"] { background: var(--surface); box-shadow: 0 1px 2px rgba(20,20,19,.08); }
+.nav-item[aria-current="true"] > svg.nav-ico { color: var(--accent); }
+.nav-ico { width: 18px; height: 18px; flex: none; color: var(--muted); }
+.nav-text { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nav-count { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.nav-count.warn { color: var(--crit); font-weight: 600; }
+.chev { width: 16px; height: 16px; color: var(--faint); transition: transform .15s; flex: none; }
+.nav-group[data-open="true"] > .nav-item .chev { transform: rotate(90deg); }
+.nav-sub { display: none; flex-direction: column; gap: 1px; padding: 2px 0 6px 28px; position: relative; }
+.nav-sub::before { content: ""; position: absolute; left: 19px; top: 2px; bottom: 8px; width: 1px; background: var(--line-strong); }
+.nav-group[data-open="true"] > .nav-sub { display: flex; }
+.nav-sub .nav-item { min-height: 32px; padding: 6px 10px; font-size: 13.5px; font-weight: 400; color: var(--muted); }
+.nav-sub .nav-item[aria-current="true"] { color: var(--fg); font-weight: 500; }
+.side-foot { border-top: 1px solid var(--line); padding: 12px 18px; font-family: var(--font-head); font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* Collapsed rail */
+.shell.collapsed .side-title, .shell.collapsed .nav-text, .shell.collapsed .nav-count, .shell.collapsed .chev,
+.shell.collapsed .nav-label, .shell.collapsed .nav-sub, .shell.collapsed .side-foot { display: none !important; }
+.shell.collapsed .side-head { flex-direction: column; padding: 16px 0 10px; gap: 8px; }
+.shell.collapsed .nav { padding: 4px 12px; }
+.shell.collapsed .nav-item { justify-content: center; padding: 8px; }
+.shell.collapsed .nav-item .dot { position: absolute; }
+.shell.collapsed .nav > .nav-group > .nav-item, .shell.collapsed .nav > .nav-item { position: relative; }
+.rail-dot { display: none; position: absolute; top: 6px; right: 8px; width: 7px; height: 7px; border-radius: 50%; background: var(--crit); }
+.shell.collapsed .rail-dot { display: block; }
+.collapse-btn svg { transition: transform .2s; }
+.shell.collapsed .collapse-btn svg { transform: rotate(180deg); }
+
+.main { min-width: 0; }
+.mobilebar { display: none; }
+.side-scrim { position: fixed; inset: 0; background: rgba(20,20,19,.32); z-index: 29; }
+
+.wrap {
+  max-width: 1120px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 28px 56px;
+  display: flex; flex-direction: column; gap: 36px;
+}
+@media (min-width: 901px) { .wrap { padding-left: 40px; padding-right: max(40px, env(safe-area-inset-right, 0px)); } }
+@media (max-width: 900px) {
+  .shell, .shell.collapsed { grid-template-columns: minmax(0, 1fr); --side-w: 280px; }
+  .side { position: fixed; left: 0; top: 0; bottom: 0; height: auto; width: min(300px, 86vw); transform: translateX(-102%); transition: transform .22s ease; box-shadow: var(--shadow); }
+  .shell.menu-open .side { transform: none; }
+  .collapse-btn, .side-resizer { display: none !important; }
+  .shell.collapsed .side-title, .shell.collapsed .nav-text, .shell.collapsed .nav-count, .shell.collapsed .chev, .shell.collapsed .nav-label, .shell.collapsed .side-foot { display: revert !important; }
+  .shell.collapsed .nav-group[data-open="true"] > .nav-sub { display: flex !important; }
+  .shell.collapsed .side-head { flex-direction: row; padding: 18px 14px 14px 18px; }
+  .shell.collapsed .nav-item { justify-content: flex-start; padding: 8px 10px; }
+  .shell.collapsed .rail-dot { display: none; }
+  .mobilebar {
+    display: flex; align-items: center; gap: 10px; position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20;
+    background: var(--bg); border-bottom: 1px solid var(--line);
+    padding-block: 10px; padding-left: max(12px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+    font-family: var(--font-head); font-weight: 600; font-size: 15px;
+  }
+  .mobilebar .mark { width: 18px; height: 18px; }
+  body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+}
+h1, h2, h3, .ui { font-family: var(--font-head); }
+h1, h2, h3 { margin: 0; text-wrap: balance; letter-spacing: -0.01em; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
+.eyebrow { font-family: var(--font-head); font-size: 11.5px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+
+/* Header */
+.top { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 20px; }
+.brand { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.mark { width: 22px; height: 22px; color: var(--accent); flex: none; }
+h1 { font-size: clamp(30px, 4.4vw, 42px); font-weight: 600; line-height: 1.1; }
+.lede { margin: 10px 0 0; color: var(--muted); max-width: 60ch; font-size: 16px; }
+.lede strong { color: var(--fg); font-weight: 500; }
+.actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.search {
+  display: flex; align-items: center; gap: 8px; height: 40px; padding: 0 12px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 10px; min-width: 0; width: min(320px, 100%);
+}
+.search svg { width: 16px; height: 16px; color: var(--faint); flex: none; }
+.search input { border: 0; outline: 0; background: transparent; color: var(--fg); font-family: var(--font-head); font-size: 14px; width: 100%; min-width: 0; }
+.search kbd { font-family: var(--font-mono); font-size: 11px; color: var(--faint); border: 1px solid var(--line); border-radius: 5px; padding: 1px 6px; }
+.btn {
+  display: inline-flex; align-items: center; gap: 8px; height: 40px; padding: 0 16px; cursor: pointer;
+  font-family: var(--font-head); font-size: 14px; font-weight: 500;
+  border-radius: 10px; border: 1px solid var(--line-strong); background: var(--surface);
+}
+.btn:hover { border-color: var(--fg); }
+.btn.primary { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+.btn.primary:hover { background: var(--accent-ink); border-color: var(--accent-ink); color: #fff; }
+.btn svg { width: 16px; height: 16px; }
+
+/* Status strip */
+.strip {
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); overflow: hidden;
+}
+.stat { padding: 16px 20px; display: flex; flex-direction: column; gap: 2px; border-left: 1px solid var(--line); min-width: 0; }
+.stat:first-child { border-left: 0; }
+.stat .n { font-family: var(--font-head); font-size: 26px; font-weight: 600; font-variant-numeric: tabular-nums; line-height: 1.2; }
+.stat .l { font-family: var(--font-head); font-size: 13px; color: var(--muted); }
+.stat .sub { font-family: var(--font-head); font-size: 12px; margin-top: 4px; }
+.stat .sub.warn { color: var(--warn); } .stat .sub.ok { color: var(--green); } .stat .sub.off { color: var(--faint); }
+.stat.empty .n { color: var(--faint); }
+
+/* Section heads */
+.sec-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+.sec-head h2 { font-size: 19px; font-weight: 600; }
+.sec-head p { margin: 0; color: var(--muted); font-size: 14px; }
+
+/* Attention */
+.attention { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); gap: 16px; align-items: start; }
+.more { display: flex; justify-content: center; padding: 14px; border-top: 1px solid var(--line); }
+.view { display: flex; flex-direction: column; gap: 24px; }
+.view-head .lede { max-width: 68ch; }
+.dis-panels { display: flex; flex-direction: column; gap: 16px; }
+.dis-panels .panel { padding: 18px 20px 6px; }
+.dis-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 16px; align-items: start; padding: 14px 0; border-top: 1px solid var(--line); }
+.dis-row:first-child { border-top: 0; }
+.dis-name { font-family: var(--font-head); font-size: 15px; font-weight: 500; overflow-wrap: anywhere; }
+.dis-src { font-family: var(--font-head); font-size: 12px; color: var(--muted); margin-left: 8px; }
+.dis-why { grid-column: 1 / -1; color: var(--muted); font-size: 14px; margin: 0; }
+.dis-alt { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-family: var(--font-head); font-size: 12.5px; color: var(--muted); }
+.dis-actions { display: flex; gap: 6px; align-items: center; }
+.link-btn { border: 1px solid var(--line-strong); background: transparent; border-radius: 8px; padding: 5px 10px; cursor: pointer; font-family: var(--font-head); font-size: 12.5px; font-weight: 500; }
+.link-btn:hover { border-color: var(--accent); color: var(--accent-ink); }
+.stat.clickable { cursor: pointer; text-align: left; border-top: 0; border-right: 0; border-bottom: 0; background: transparent; font: inherit; color: inherit; }
+.stat.clickable:hover { background: var(--sunken); }
+.stat.clickable .sub { text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 18px 18px 8px; min-width: 0; }
+.panel h3 { font-size: 14.5px; font-weight: 600; display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.panel h3 .count { font-weight: 500; color: var(--muted); }
+.panel .hint { margin: 0 0 8px; color: var(--muted); font-size: 13.5px; }
+.rows { list-style: none; margin: 0; padding: 0; }
+.row {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; align-items: center;
+  padding: 10px 0; border-top: 1px solid var(--line); cursor: pointer;
+}
+.row:first-child { border-top: 0; }
+.row:hover .row-name { color: var(--accent-ink); }
+.row-name { font-family: var(--font-head); font-size: 14px; font-weight: 500; min-width: 0; overflow-wrap: anywhere; }
+.row-note { grid-column: 1 / -1; color: var(--muted); font-size: 13.5px; }
+.row button.linklike { all: unset; cursor: pointer; }
+
+/* Pills */
+.pill {
+  display: inline-flex; align-items: center; gap: 6px; white-space: nowrap;
+  font-family: var(--font-head); font-size: 11.5px; font-weight: 500; line-height: 1;
+  padding: 5px 8px; border-radius: 999px; background: var(--sunken); color: var(--muted);
+}
+.pill::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.pill.duplicate { background: var(--crit-soft); color: var(--crit); }
+.pill.region { background: var(--warn-soft); color: var(--warn); }
+.pill.overlap { background: var(--blue-soft); color: var(--blue); }
+.pill.pair { background: var(--sunken); color: var(--muted); }
+.pill.health { background: var(--crit-soft); color: var(--crit); }
+.pill.ok { background: var(--green-soft); color: var(--green); }
+.pill.info { background: var(--sunken); color: var(--muted); }
+.pill.info::before, .pill.pair::before { display: none; }
+
+/* Categories */
+.cats { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 12px; }
+.cat {
+  display: flex; align-items: center; gap: 14px; text-align: left; cursor: pointer;
+  padding: 12px 16px 12px 12px; border-radius: var(--r); border: 1px solid var(--line); background: var(--surface);
+  transition: border-color .15s, transform .15s, box-shadow .15s;
+}
+.cat:hover { border-color: var(--line-strong); box-shadow: var(--shadow); }
+.cat[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent) inset; }
+.cat[aria-pressed="true"] .ico { background: var(--accent-soft); color: var(--accent-ink); }
+.cat.is-empty { opacity: .5; }
+.cat.is-empty .cat-count { color: var(--faint); }
+.nav-item.is-empty { opacity: .5; }
+.ico {
+  width: 48px; height: 48px; border-radius: 10px; flex: none;
+  display: grid; place-items: center; background: var(--sunken); color: var(--fg);
+}
+.ico svg { width: 24px; height: 24px; }
+.cat-text { min-width: 0; flex: 1; display: flex; flex-direction: column; }
+.cat-label { font-family: var(--font-head); font-size: 15px; font-weight: 500; }
+.cat-blurb { font-size: 12.5px; color: var(--muted); line-height: 1.35; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; }
+.cat-count { font-family: var(--font-head); font-size: 14px; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+/* Toolbar + list */
+.toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+.seg { display: inline-flex; background: var(--sunken); border-radius: 10px; padding: 3px; gap: 2px; flex-wrap: wrap; }
+.seg button {
+  border: 0; background: transparent; cursor: pointer; padding: 7px 12px; border-radius: 8px;
+  font-family: var(--font-head); font-size: 13.5px; font-weight: 500; color: var(--muted);
+}
+.seg button[aria-pressed="true"] { background: var(--surface); color: var(--fg); box-shadow: 0 1px 2px rgba(20,20,19,.08); }
+.seg .c { color: var(--faint); font-variant-numeric: tabular-nums; margin-left: 4px; }
+.tools-right { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.check { display: inline-flex; align-items: center; gap: 8px; font-family: var(--font-head); font-size: 13.5px; color: var(--muted); cursor: pointer; }
+.check input { accent-color: var(--accent); width: 16px; height: 16px; }
+.active-filter { font-family: var(--font-head); font-size: 13.5px; display: inline-flex; align-items: center; gap: 6px; }
+.active-filter button { border: 0; background: var(--accent-soft); color: var(--accent-ink); border-radius: 999px; padding: 4px 10px; cursor: pointer; font-family: var(--font-head); font-size: 12.5px; font-weight: 500; }
+
+.list { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); }
+.item {
+  display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; gap: 14px; align-items: start;
+  padding: 14px 18px; border-top: 1px solid var(--line); cursor: pointer; text-align: left; width: 100%;
+  background: transparent; border-left: 0; border-right: 0; border-bottom: 0;
+}
+.item:first-child { border-top: 0; }
+.item:hover { background: var(--sunken); }
+.item .ico { width: 40px; height: 40px; border-radius: 9px; }
+.item .ico svg { width: 20px; height: 20px; }
+.item-main { min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.item-top { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; }
+.item-name { font-family: var(--font-head); font-size: 15px; font-weight: 500; overflow-wrap: anywhere; }
+.item-src { font-family: var(--font-head); font-size: 12px; color: var(--muted); }
+.item-sum { color: var(--muted); font-size: 14px; }
+.item-flags { display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; max-width: 260px; }
+.kind-tag { font-family: var(--font-head); font-size: 11px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--faint); }
+.empty-list { padding: 40px 20px; text-align: center; color: var(--muted); }
+.empty-list strong { display: block; font-family: var(--font-head); color: var(--fg); font-weight: 500; margin-bottom: 4px; }
+
+/* Overlap map */
+.groups { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 12px; }
+.group { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 16px 18px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.group-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.group-head h3 { font-size: 15px; font-weight: 600; }
+.group p { margin: 0; color: var(--muted); font-size: 13.5px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip {
+  border: 1px solid var(--line-strong); background: transparent; border-radius: 8px; padding: 5px 9px; cursor: pointer;
+  font-family: var(--font-mono); font-size: 12px; color: var(--fg); overflow-wrap: anywhere; text-align: left;
+}
+.chip:hover { border-color: var(--accent); color: var(--accent-ink); }
+.chip.keep { border-color: var(--green); color: var(--green); }
+.chip.keep::after { content: " · keep"; font-family: var(--font-head); }
+
+/* Claude Code */
+.cc { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 24px; background: var(--sunken); border-radius: var(--r); padding: 24px; border: 1px dashed var(--line-strong); }
+.cc h3 { font-size: 17px; font-weight: 600; margin-bottom: 6px; }
+.cc p { margin: 0 0 10px; color: var(--muted); }
+.cc ol { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 8px; color: var(--muted); }
+.cc ol strong { color: var(--fg); font-weight: 500; }
+.codebox { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; overflow-x: auto; }
+.codebox pre { margin: 0; padding: 14px 16px; font-family: var(--font-mono); font-size: 12.5px; line-height: 1.6; color: var(--fg); }
+.codebox .cm { color: var(--faint); }
+
+/* Footer */
+.foot { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; border-top: 1px solid var(--line); padding-top: 18px; font-family: var(--font-head); font-size: 12.5px; color: var(--muted); }
+
+/* Drawer */
+.scrim { position: fixed; inset: 0; background: rgba(20,20,19,.32); z-index: 40; opacity: 0; transition: opacity .2s; }
+.scrim.open { opacity: 1; }
+.drawer {
+  position: fixed; top: 0; right: 0; bottom: 0; z-index: 41; width: min(480px, 100%);
+  background: var(--surface); border-left: 1px solid var(--line); box-shadow: var(--shadow);
+  display: flex; flex-direction: column; transform: translateX(100%); transition: transform .22s ease;
+  padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+}
+.drawer.open { transform: none; }
+.d-head { display: flex; gap: 14px; align-items: flex-start; padding: 22px 22px 16px; border-bottom: 1px solid var(--line); }
+.d-head .ico { width: 44px; height: 44px; }
+.d-title { min-width: 0; flex: 1; }
+.d-title h2 { font-size: 20px; font-weight: 600; overflow-wrap: anywhere; }
+.d-meta { font-family: var(--font-head); font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+.x { border: 0; background: var(--sunken); width: 34px; height: 34px; border-radius: 9px; cursor: pointer; display: grid; place-items: center; flex: none; }
+.x svg { width: 16px; height: 16px; }
+.d-body { overflow-y: auto; padding: 18px 22px 28px; display: flex; flex-direction: column; gap: 22px; }
+.d-sum { font-size: 16.5px; line-height: 1.5; margin: 0; }
+.d-sec h4 { margin: 0 0 8px; }
+.try { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.try li { display: flex; gap: 8px; align-items: center; background: var(--sunken); border-radius: 9px; padding: 9px 10px 9px 12px; }
+.try li span { flex: 1; min-width: 0; font-style: italic; }
+.copy { border: 0; background: transparent; cursor: pointer; color: var(--muted); font-family: var(--font-head); font-size: 12px; font-weight: 500; padding: 4px 6px; border-radius: 6px; flex: none; }
+.copy:hover { color: var(--accent-ink); background: var(--surface); }
+.invoke { display: flex; align-items: center; gap: 8px; font-family: var(--font-mono); font-size: 13px; background: var(--sunken); border-radius: 9px; padding: 9px 10px 9px 12px; overflow-wrap: anywhere; }
+.invoke code { flex: 1; min-width: 0; }
+.note-box { border-left: 3px solid var(--blue); background: var(--blue-soft); padding: 10px 12px; border-radius: 0 9px 9px 0; font-size: 14px; }
+.note-box.dup { border-color: var(--crit); background: var(--crit-soft); }
+.note-box.reg { border-color: var(--warn); background: var(--warn-soft); }
+.note-box p { margin: 0 0 8px; }
+.raw { font-size: 14px; color: var(--muted); margin: 0; white-space: pre-wrap; }
+details summary { cursor: pointer; font-family: var(--font-head); font-size: 13px; font-weight: 500; color: var(--muted); }
+details[open] summary { margin-bottom: 8px; }
+
+
+/* Scope switch + world tags */
+.scope { display: flex; gap: 2px; margin: 0 12px 6px; padding: 3px; background: var(--line); border-radius: 9px; }
+.scope button { flex: 1; border: 0; background: transparent; cursor: pointer; padding: 6px 4px; border-radius: 7px; font-family: var(--font-head); font-size: 12px; font-weight: 500; color: var(--muted); white-space: nowrap; }
+.scope button[aria-pressed="true"] { background: var(--surface); color: var(--fg); box-shadow: 0 1px 2px rgba(20,20,19,.08); }
+.shell.collapsed .scope { display: none; }
+.world-tag { font-family: var(--font-head); font-size: 11px; font-weight: 500; color: var(--accent-ink); background: var(--accent-soft); border-radius: 5px; padding: 1px 6px; align-self: center; }
+.world-tag:not(.code) { color: var(--blue); background: var(--blue-soft); }
+.group .world-tag { align-self: flex-start; margin-top: -4px; }
+.chip.more-chip { font-family: var(--font-head); color: var(--muted); border-style: dashed; }
+.chip.static { cursor: default; font-family: var(--font-head); }
+.cc.scanned { border-style: solid; background: var(--surface); }
+.cc.scanned .btn { margin-top: 4px; }
+@media (max-width: 900px) { .shell.collapsed .scope { display: flex; } }
+
+/* Source badges + origin card */
+.badges { display: flex; flex-wrap: wrap; gap: 5px; margin: 2px 0 1px; }
+.badges > span { font-family: var(--font-head); font-size: 11px; font-weight: 500; line-height: 1; padding: 4px 7px; border-radius: 5px; }
+.b-type { background: var(--sunken); color: var(--fg); }
+.b-src { border: 1px solid var(--line-strong); color: var(--muted); }
+.b-src.cc-standalone, .b-src.app-account { border-color: var(--accent); color: var(--accent-ink); }
+.b-src.cc-shared { border-style: dashed; }
+.b-origin { color: var(--muted); padding-left: 2px !important; }
+.b-origin::before { content: "from "; color: var(--faint); }
+.badges .world-tag { padding: 4px 7px; }
+.origin { border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; background: var(--bg); }
+.origin h4 { margin: 0; }
+.crumbs { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; font-family: var(--font-head); font-size: 12.5px; font-weight: 500; }
+.crumbs span { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 3px 8px; }
+.crumbs svg { width: 12px; height: 12px; color: var(--faint); }
+.origin dl { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 8px 12px; margin: 0; font-size: 14px; }
+.origin dt { font-family: var(--font-head); font-size: 12px; font-weight: 500; color: var(--muted); padding-top: 2px; }
+.origin dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+.origin dd code { font-family: var(--font-mono); font-size: 12.5px; }
+.o-detail { display: block; color: var(--muted); margin-top: 3px; }
+.conf { font-family: var(--font-head); font-size: 11px; font-weight: 500; padding: 2px 7px; border-radius: 999px; margin-left: 4px; white-space: nowrap; }
+.conf.confirmed { background: var(--green-soft); color: var(--green); }
+.conf.matched { background: var(--blue-soft); color: var(--blue); }
+.conf.inferred { background: var(--warn-soft); color: var(--warn); }
+.conf.unknown { background: var(--sunken); color: var(--muted); }
+.inline-link { all: unset; cursor: pointer; color: var(--accent-ink); text-decoration: underline; text-underline-offset: 3px; font-weight: 500; }
+@media (max-width: 560px) { .origin dl { grid-template-columns: 1fr; gap: 2px; } .origin dt { padding-top: 8px; } }
+
+/* Toast */
+.toast {
+  position: fixed; left: 50%; bottom: calc(24px + env(safe-area-inset-bottom, 0px)); transform: translate(-50%, 20px);
+  background: var(--fg); color: var(--bg); font-family: var(--font-head); font-size: 13.5px; padding: 11px 16px; border-radius: 10px;
+  opacity: 0; transition: opacity .2s, transform .2s; z-index: 60; max-width: calc(100% - 32px); pointer-events: none;
+}
+.toast.show { opacity: 1; transform: translate(-50%, 0); }
+.fallback { position: fixed; inset: auto 16px calc(16px + env(safe-area-inset-bottom, 0px)); z-index: 61; background: var(--surface); border: 1px solid var(--line-strong); border-radius: 12px; padding: 14px; box-shadow: var(--shadow); font-family: var(--font-head); font-size: 13px; }
+.fallback textarea { width: 100%; margin-top: 8px; font-family: var(--font-mono); font-size: 12.5px; background: var(--sunken); color: var(--fg); border: 1px solid var(--line); border-radius: 8px; padding: 8px; resize: none; }
+
+@media (max-width: 860px) {
+  .attention, .cc { grid-template-columns: 1fr; }
+  .strip { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .stat:nth-child(3) { border-left: 0; }
+  .stat:nth-child(n+3) { border-top: 1px solid var(--line); }
+}
+@media (max-width: 560px) {
+  .item { grid-template-columns: 36px minmax(0, 1fr); }
+  .item .ico { width: 36px; height: 36px; }
+  .item-flags { grid-column: 2; justify-content: flex-start; max-width: none; }
+  .search { width: 100%; }
+  .actions { width: 100%; }
+  .actions .btn { flex: 1; justify-content: center; }
+  .drawer { top: auto; height: 88%; width: 100%; border-left: 0; border-top: 1px solid var(--line); border-radius: 16px 16px 0 0; transform: translateY(100%); padding-left: env(safe-area-inset-left, 0px); }
+  .cats { grid-template-columns: 1fr; }
+  .groups { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-engineering" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 8h18M9.5 12l-2 2 2 2M14.5 12l2 2-2 2"/></symbol>
+    <symbol id="i-design" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 16l5-5 4 4 3-3 6 6"/><circle cx="15.5" cy="8.5" r="1.5"/></symbol>
+    <symbol id="i-documents" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3h7l4 4v11a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M15 3v4h4M9 12h6M9 15.5h6"/><path d="M6 7H5a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h8"/></symbol>
+    <symbol id="i-browser" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M3 8h18M6 6h.01M8.5 6h.01"/><path d="M13 13l6 2.5-2.6 1 -1 2.6z"/></symbol>
+    <symbol id="i-agents" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M10 3l1.6 4.4L16 9l-4.4 1.6L10 15l-1.6-4.4L4 9l4.4-1.6z"/><path d="M17.5 13.5l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z"/></symbol>
+    <symbol id="i-productivity" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="4" height="4" rx="1"/><rect x="4" y="10" width="4" height="4" rx="1"/><rect x="4" y="16" width="4" height="4" rx="1"/><path d="M11 6h9M11 12h9M11 18h9M5 12l1 1 1.5-2"/></symbol>
+    <symbol id="i-research" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h9a2 2 0 0 1 2 2v3"/><path d="M5 4v14a2 2 0 0 0 2 2h4"/><circle cx="16" cy="15" r="3.5"/><path d="M18.5 17.5L21 20M8 8h5M8 11h3"/></symbol>
+    <symbol id="i-data" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16"/><rect x="5" y="12" width="3" height="6" rx=".5"/><rect x="10.5" y="7" width="3" height="11" rx=".5"/><rect x="16" y="10" width="3" height="8" rx=".5"/></symbol>
+    <symbol id="i-finance" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6.5 9.5h.01M17.5 14.5h.01"/></symbol>
+    <symbol id="i-sales" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16l-6 7v5l-4 2v-7z"/></symbol>
+    <symbol id="i-marketing" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10v4a1 1 0 0 0 1 1h2l6 4V5L7 9H5a1 1 0 0 0-1 1z"/><path d="M16.5 9a4 4 0 0 1 0 6M19 6.5a7.5 7.5 0 0 1 0 11"/></symbol>
+    <symbol id="i-legal" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v16M8 20h8M5 7h14M12 4.5 12 7"/><path d="M5 7l-2.5 6a2.5 2.5 0 0 0 5 0z"/><path d="M19 7l-2.5 6a2.5 2.5 0 0 0 5 0z"/></symbol>
+    <symbol id="i-support" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 5h14a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1h-8l-4 3v-3H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z"/><path d="M8.5 10.5h.01M12 10.5h.01M15.5 10.5h.01"/></symbol>
+    <symbol id="i-operations" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="12" rx="2"/><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M3 12h18M11 12v2h2v-2"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/></symbol>
+    <symbol id="i-refresh" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11a8 8 0 0 0-14.3-4.9L4 8M4 4v4h4M4 13a8 8 0 0 0 14.3 4.9L20 16M20 20v-4h-4"/></symbol>
+    <symbol id="i-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+    <symbol id="i-overview" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="7" height="7" rx="1.5"/><rect x="13" y="4" width="7" height="7" rx="1.5"/><rect x="4" y="13" width="7" height="7" rx="1.5"/><rect x="13" y="13" width="7" height="7" rx="1.5"/></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4l9 16H3z"/><path d="M12 10v4M12 17h.01"/></symbol>
+    <symbol id="i-skill" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3L5 13h6l-1 8 8-10h-6z"/></symbol>
+    <symbol id="i-plugin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4h3a1.5 1.5 0 0 1 3 0h3a1 1 0 0 1 1 1v3a1.5 1.5 0 0 1 0 3v3a1 1 0 0 1-1 1h-3a1.5 1.5 0 0 0-3 0H9a1 1 0 0 1-1-1v-3a1.5 1.5 0 0 0 0-3V5a1 1 0 0 1 1-1z" transform="translate(-1.5 2.5)"/></symbol>
+    <symbol id="i-plug" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3v4M15 3v4M7 7h10v4a5 5 0 0 1-10 0z"/><path d="M12 16v5"/></symbol>
+    <symbol id="i-overlap" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="9" cy="12" r="5.5"/><circle cx="15" cy="12" r="5.5"/></symbol>
+    <symbol id="i-terminal" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 9l3 3-3 3M12.5 15H17"/></symbol>
+    <symbol id="i-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></symbol>
+    <symbol id="i-collapse" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4" width="17" height="16" rx="2"/><path d="M9 4v16M15.5 9.5L13 12l2.5 2.5"/></symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+    <symbol id="i-source" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2.2"/><circle cx="6" cy="18" r="2.2"/><circle cx="18" cy="12" r="2.2"/><path d="M6 8.2v7.6M8 6.8c4 .4 6.8 2.2 8 3.6M8 17.2c4-.4 6.8-2.2 8-3.6"/></symbol>
+    <symbol id="i-mark" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5l1.7 6.2 6.2-1.6-4.6 4.4 4.6 4.4-6.2-1.6L12 20.5l-1.7-6.2-6.2 1.6 4.6-4.4-4.6-4.4 6.2 1.6z"/></symbol>
+  </defs>
+</svg>
+
+<div class="shell" id="shell">
+<aside class="side" id="side" aria-label="Sections">
+  <div class="side-head">
+    <svg class="mark"><use href="#i-mark"/></svg>
+    <span class="side-title">Skill Atlas</span>
+    <button class="icon-btn collapse-btn" id="collapse" type="button" aria-label="Collapse sidebar" title="Collapse sidebar"><svg><use href="#i-collapse"/></svg></button>
+  </div>
+  <div class="scope" id="scope" role="group" aria-label="Where" hidden></div>
+  <nav class="nav" id="nav"></nav>
+  <div class="side-foot" id="side-foot"></div>
+  <div class="side-resizer" id="resizer" role="separator" aria-orientation="vertical" aria-label="Resize sidebar" tabindex="0" title="Drag to resize. Double-click to reset."></div>
+</aside>
+<div class="side-scrim" id="side-scrim" hidden></div>
+<main class="main">
+<div class="mobilebar">
+  <button class="icon-btn" id="menu" type="button" aria-label="Open menu" aria-controls="side" aria-expanded="false"><svg><use href="#i-menu"/></svg></button>
+  <svg class="mark"><use href="#i-mark"/></svg><span>Skill Atlas</span>
+</div>
+<div class="wrap">
+  <header class="top v-main" id="overview">
+    <div>
+      <h1>What Claude can use for you</h1>
+      <p class="lede" id="lede"></p>
+    </div>
+    <div class="actions">
+      <label class="search" for="q">
+        <svg><use href="#i-search"/></svg>
+        <span class="sr">Search skills, plugins and connectors</span>
+        <input id="q" type="search" placeholder="What do you want to do?" autocomplete="off">
+        <kbd>/</kbd>
+      </label>
+      <button class="btn primary" id="refresh" type="button"><svg><use href="#i-refresh"/></svg>Refresh</button>
+    </div>
+  </header>
+
+  <section class="strip v-main" id="strip" aria-label="Summary"></section>
+
+  <section class="view" id="view-disable" aria-labelledby="dis-h" hidden>
+    <header class="view-head">
+      <h1 id="dis-h">Consider disabling</h1>
+      <p class="lede">Claude reads every enabled skill at the start of each chat. When two skills fit the same request, it has to guess. Turning off the ones you don't need keeps its choices clear. These are suggestions; nothing changes until you switch something off yourself.</p>
+    </header>
+    <div class="dis-panels" id="disable-panels"></div>
+  </section>
+
+  <section class="view" id="view-overlaps" aria-labelledby="ov-h" hidden>
+    <header class="view-head">
+      <h1 id="ov-h">Skills that overlap</h1>
+      <p class="lede">Groups of skills that answer similar requests, with a line on when to pick each. Duplicates are better switched off; overlaps are worth knowing so you can name the right one.</p>
+    </header>
+    <div class="groups" id="groups"></div>
+  </section>
+
+  <section aria-labelledby="cat-h" class="v-main">
+    <div class="sec-head"><h2 id="cat-h">Browse by domain</h2><p id="cat-sub"></p></div>
+    <div class="cats" id="cats"></div>
+  </section>
+
+  <section aria-labelledby="list-h" id="browse" class="v-main">
+    <div class="toolbar">
+      <div class="seg" id="types" role="group" aria-label="Type"></div>
+      <div class="tools-right">
+        <span class="active-filter" id="active"></span>
+        <label class="check" for="flagged"><input type="checkbox" id="flagged">Flagged only</label>
+      </div>
+    </div>
+    <h2 id="list-h" class="sr">Results</h2>
+    <div class="list" id="list"></div>
+  </section>
+
+  <section aria-labelledby="cc-h" id="cc-wrap" class="v-main"></section>
+
+  <footer class="foot">
+    <span id="changes"></span>
+    <span>Generated by the skill-atlas skill. Not affiliated with Anthropic.</span>
+  </footer>
+</div>
+</main>
+</div>
+
+<div class="scrim" id="scrim" hidden></div>
+<aside class="drawer" id="drawer" aria-hidden="true" aria-labelledby="d-name" role="dialog"></aside>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script id="atlas-data" type="application/json">__ATLAS_DATA__</script>
+<script>
+(function () {
+  const D = JSON.parse(document.getElementById("atlas-data").textContent);
+  const $ = (s, el = document) => el.querySelector(s);
+  const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const byId = Object.fromEntries(D.items.map(i => [i.id, i]));
+  const catById = Object.fromEntries(D.categories.map(c => [c.id, c]));
+  const icon = cat => `<span class="ico" aria-hidden="true"><svg><use href="#i-${esc(cat)}"/></svg></span>`;
+  const KIND = { skill: "Skill", plugin: "Plugin", connector: "Connector" };
+  const WORLD = { "claude-app": "Claude app", "claude-code": "Claude Code" };
+  const REFRESH_PROMPT = "Refresh my Skill Atlas";
+  const PAGE = 15;
+  const hasCC = !!D.claudeCode;
+
+  const state = { cat: null, type: "all", flagged: false, q: "", all: false, plugin: null, status: null, anchor: null, world: "all", source: null };
+  try { const w = localStorage.getItem("atlas-world"); if (w && (w === "all" || w === "claude-app" || (w === "claude-code" && hasCC))) state.world = w; } catch (e) {}
+
+  const CAT_ORDER = (() => {
+    const t = {}; D.items.forEach(i => t[i.category] = (t[i.category] || 0) + 1);
+    return D.categories.slice().sort((a, b) => (t[b.id] || 0) - (t[a.id] || 0));
+  })();
+  const pluginOf = i => i.plugin ? (i.world === "claude-code" ? byId["cc-plugin:" + i.plugin] : byId["plugin:" + i.plugin]) : null;
+  function kindLabel(i) {
+    if (i.subtype === "command") return "Command";
+    if (i.subtype === "agent") return "Subagent";
+    return KIND[i.kind];
+  }
+  function sourceLabel(i) {
+    if (i.kind === "connector") return i.scope || "Connector";
+    if (i.kind === "plugin") return `${i.skills.length} item${i.skills.length === 1 ? "" : "s"}${i.author ? " · by " + i.author : ""}`;
+    const sub = i.subtype ? kindLabel(i) + " · " : "";
+    if (i.source === "builtin") return "Built into Claude";
+    if (i.source === "account") return "Your skills";
+    if (i.source === "cc-user") return sub + "your " + (i.subtype ? i.subtype + "s" : "skills");
+    if (i.source === "cc-shared") return "Shared agents folder";
+    if (i.source === "cc-project") return sub + "project";
+    if (i.plugin) { const p = pluginOf(i); return sub + "plugin " + (p ? p.name : i.plugin); }
+    return "";
+  }
+  const SOURCES = {
+    "app-builtin": "Built into Claude", "app-account": "Your account's skills", "app-plugin": "Claude app plugins", "app-connector": "Claude app connectors",
+    "cc-standalone": "Claude Code standalone", "cc-plugin": "Claude Code plugins", "cc-mcp": "Claude Code MCP servers",
+    "cc-shared": "Shared agents folder", "cc-project": "Claude Code projects"
+  };
+  function sourceKey(i) {
+    if (i.world === "claude-app") {
+      if (i.kind === "connector") return "app-connector";
+      if (i.kind === "plugin" || i.plugin) return "app-plugin";
+      return i.source === "builtin" ? "app-builtin" : "app-account";
+    }
+    if (i.kind === "connector") return "cc-mcp";
+    if (i.kind === "plugin" || i.source === "cc-plugin") return "cc-plugin";
+    if (i.source === "cc-shared") return "cc-shared";
+    if (i.source === "cc-project") return "cc-project";
+    return "cc-standalone";
+  }
+  function sourceShort(i) {
+    const k = sourceKey(i);
+    if ((k === "app-plugin" || k === "cc-plugin") && i.kind !== "plugin") { const p = pluginOf(i); return "Plugin · " + (p ? p.name : i.plugin); }
+    return { "app-builtin": "Built-in", "app-account": "Account skill", "app-plugin": "Plugin", "app-connector": "Connector",
+             "cc-standalone": "Standalone", "cc-plugin": "Plugin", "cc-mcp": i.plugin ? "MCP · from plugin " + i.plugin : "MCP server",
+             "cc-shared": "Shared folder", "cc-project": "Project" }[k];
+  }
+  const TYPE_EXPLAIN = {
+    Skill: "Instructions Claude loads when your request matches. You can also call it by name.",
+    Command: "A shortcut you type as /name.",
+    Subagent: "A helper Claude Code hands a task to. You don't call it with /.",
+    Plugin: "A bundle that installs skills, commands, agents or MCP servers together.",
+    Connector: "Gives Claude tools to reach an outside service (an MCP server)."
+  };
+  const CONF = { confirmed: "Confirmed", matched: "Matched by name", inferred: "Inferred", unknown: "Unknown" };
+  function originCard(i) {
+    const k = sourceKey(i), t = kindLabel(i), p = pluginOf(i);
+    const typeWord = t.toLowerCase();
+    let installed, lives;
+    if (i.kind === "plugin") { installed = `A plugin. Installs ${i.skills.length} item${i.skills.length === 1 ? "" : "s"} together.`; lives = i.world === "claude-code" ? "Claude Code → /plugin" + (i.marketplace ? ` · marketplace ${esc(i.marketplace)}` : "") : "Claude app → Settings → Customize → Plugins"; }
+    else if (k === "app-builtin") { installed = "Built into Claude."; lives = "Claude app, built in"; }
+    else if (k === "app-account") { installed = `Standalone ${typeWord}, not part of any plugin.`; lives = "Claude app → Settings → Customize → Skills"; }
+    else if (k === "app-connector") { installed = "A connector."; lives = i.source === "desktop" ? "Claude desktop app on this Mac (local server)" : "Claude app → Settings → Connectors"; }
+    else if (k === "cc-mcp") { installed = i.plugin ? `An MCP server provided by the ${esc(i.plugin)} plugin.` : "An MCP server you added."; lives = i.plugin ? `Inside the ${esc(i.plugin)} plugin` : "~/.claude.json"; }
+    else if (p) { installed = `Part of the <button type="button" class="inline-link" data-open="${esc(p.id)}">${esc(p.name)}</button> plugin, not standalone.`; lives = i.world === "claude-code" ? `Inside the ${esc(p.name)} plugin` : `Claude app → Settings → Customize → Plugins → ${esc(p.name)}`; }
+    else { installed = `Standalone ${typeWord}, not part of any plugin.`; lives = ""; }
+    if (i.path) lives = `<code>${esc(i.path)}</code> <button type="button" class="copy" data-copy="${esc(i.path)}">Copy</button>`;
+    const o = i.origin || { label: "Unknown", detail: "", confidence: "unknown" };
+    const crumbs = [WORLD[i.world], sourceShort(i), t].filter((x, n, a) => x && a.indexOf(x) === n);
+    return `<section class="origin" aria-label="Where it comes from">
+      <h4 class="eyebrow">Where it comes from</h4>
+      <div class="crumbs">${crumbs.map(c => `<span>${esc(c)}</span>`).join('<svg aria-hidden="true"><use href="#i-chev"/></svg>')}</div>
+      <dl>
+        <dt>Type</dt><dd><strong class="ui">${esc(t)}.</strong> ${esc(TYPE_EXPLAIN[t] || "")}</dd>
+        <dt>Installed as</dt><dd>${installed}</dd>
+        ${lives ? `<dt>Lives in</dt><dd>${lives}</dd>` : ""}
+        <dt>Origin</dt><dd><strong class="ui">${esc(o.label)}</strong> <span class="conf ${esc(o.confidence)}">${esc(CONF[o.confidence] || o.confidence)}</span>${o.detail ? `<span class="o-detail">${esc(o.detail)}</span>` : ""}</dd>
+      </dl>
+    </section>`;
+  }
+  const isFlagged = i => i.flags.some(f => ["duplicate", "region", "health"].includes(f.type));
+  const pill = f => `<span class="pill ${esc(f.type)}">${esc(f.label)}</span>`;
+  const fmtDate = iso => { try { return new Date(iso).toLocaleString(undefined, { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }); } catch (e) { return iso; } };
+  const inWorld = i => state.world === "all" || i.world === state.world;
+
+  /* Derived sets (whole inventory) */
+  const all = D.items;
+  const broken = all.filter(i => i.kind === "connector" && (i.status === "needs_reconnect" || i.status === "not_connected"));
+  const dupPluginIds = new Set(all.filter(i => i.kind === "plugin" && i.flags.some(f => f.type === "duplicate")).map(i => i.id));
+  const dups = all.filter(i => i.flags.some(f => f.type === "duplicate") && !(i.kind === "skill" && pluginOf(i) && dupPluginIds.has(pluginOf(i).id)));
+  const regs = all.filter(i => i.kind === "skill" && i.flags.some(f => f.type === "region"));
+  const reviewN = dups.length + regs.length;
+  const cc = D.claudeCode;
+
+  /* Header + strip */
+  function renderHeader() {
+    const scope = all.filter(inWorld);
+    const n = k => scope.filter(i => i.kind === k).length;
+    const where = state.world === "all" ? esc(D.environment) : WORLD[state.world];
+    $("#lede").innerHTML = `<strong>${n("skill")} skills, ${n("plugin")} plugins and ${n("connector")} connectors</strong> in ${where}, grouped by what they do and when to reach for each. Refreshed ${esc(fmtDate(D.generatedAt))}.`;
+    const appN = all.filter(i => i.world === "claude-app").length;
+    const ccBroken = broken.filter(inWorld);
+    const sk = scope.filter(i => i.kind === "skill");
+    const rv = dups.filter(inWorld).length + regs.filter(inWorld).length;
+    $("#strip").innerHTML = [
+      rv ? `<button type="button" class="stat clickable" data-nav="disable"><span class="n">${sk.length}</span><span class="l">Skills, commands and agents</span><span class="sub warn">${rv} worth reviewing</span></button>`
+         : `<div class="stat"><span class="n">${sk.length}</span><span class="l">Skills, commands and agents</span><span class="sub ok">No issues found</span></div>`,
+      `<div class="stat"><span class="n">${n("plugin")}</span><span class="l">Plugins</span><span class="sub off">${scope.filter(i => i.kind !== "plugin" && i.plugin).length} items come from plugins</span></div>`,
+      ccBroken.length ? `<button type="button" class="stat clickable" data-nav="conn:broken"><span class="n">${n("connector")}</span><span class="l">Connectors and MCP servers</span><span class="sub warn">${ccBroken.length} not working</span></button>`
+                      : `<div class="stat"><span class="n">${n("connector")}</span><span class="l">Connectors and MCP servers</span><span class="sub ok">None reported broken</span></div>`,
+      cc ? `<button type="button" class="stat clickable" data-world="${state.world === "claude-code" ? "claude-app" : "claude-code"}"><span class="n">${state.world === "claude-code" ? appN : cc.count}</span><span class="l">${state.world === "claude-code" ? "In Claude app" : "In Claude Code"}</span><span class="sub off">${state.world === "claude-code" ? "Show Claude app" : "Scanned " + esc(fmtDate(cc.scannedAt))}</span></button>`
+         : `<div class="stat empty"><span class="n">–</span><span class="l">Claude Code</span><span class="sub off">Not scanned yet</span></div>`
+    ].join("");
+  }
+
+  /* Consider disabling view */
+  function disRow(i, kind) {
+    const gi = kind === "duplicate" ? i.flags.find(f => f.type === "duplicate").group : null;
+    const g = gi != null ? D.groups[gi] : null;
+    const why = g ? g.note : i.flags.find(f => f.type === "region").label + ". If you don't use it, switching it off keeps Claude from picking it by mistake.";
+    const keep = g && g.keep && g.keep !== i.id ? g.keep : null;
+    const name = i.kind === "plugin" ? `${i.name} plugin` : (i.invoke || i.name);
+    const extra = i.kind === "plugin" ? ` · ${i.skills.length} items` : "";
+    return `<div class="dis-row">
+      <div><span class="dis-name">${esc(name)}</span><span class="dis-src">${esc((i.kind === "skill" ? sourceLabel(i) : WORLD[i.world] + " · " + KIND[i.kind]) + extra)}</span></div>
+      <div class="dis-actions">${pill(kind === "duplicate" ? { type: "duplicate", label: "Duplicate" } : { type: "region", label: "May not apply" })}<button type="button" class="link-btn" data-open="${esc(i.id)}">Details</button></div>
+      <p class="dis-why">${esc(why)}</p>
+      ${keep ? `<div class="dis-alt">Keep instead <button type="button" class="chip keep" data-open="${esc(keep)}">${esc(byId[keep].invoke || byId[keep].name)}</button></div>`
+             : g && g.keepLabel ? `<div class="dis-alt">Keep instead <span class="chip keep static">${esc(g.keepLabel)}</span></div>` : ""}
+    </div>`;
+  }
+  function renderDisable() {
+    const sections = [];
+    ["claude-app", "claude-code"].forEach(w => {
+      if (state.world !== "all" && state.world !== w) return;
+      const d = dups.filter(i => i.world === w), r = regs.filter(i => i.world === w);
+      if (!d.length && !r.length) return;
+      sections.push(`<div class="panel"><h3>${WORLD[w]} <span class="count">${d.length + r.length}</span></h3>
+        <p class="hint">${w === "claude-code" ? "Turn these off with /plugin in Claude Code, or delete the skill folder." : "Turn these off in Settings → Customize."}</p>
+        ${d.map(i => disRow(i, "duplicate")).join("")}${r.map(i => disRow(i, "region")).join("")}</div>`);
+    });
+    $("#disable-panels").innerHTML = sections.join("") || `<div class="panel"><h3>Nothing to disable</h3><p class="hint">No duplicates or skills tied to tools you're unlikely to use.</p></div>`;
+  }
+
+  /* Filtering */
+  function matches(i, ignoreCat) {
+    if (!inWorld(i)) return false;
+    if (state.type !== "all" && i.kind !== state.type) return false;
+    if (state.flagged && !isFlagged(i)) return false;
+    if (state.plugin) { const p = byId[state.plugin]; if (!p || i.plugin !== p.invoke || i.world !== p.world) return false; }
+    if (state.status === "working" && !(i.kind === "connector" && i.status === "connected")) return false;
+    if (state.status === "broken" && !broken.includes(i)) return false;
+    if (state.status === "unchecked" && !(i.kind === "connector" && i.status === "unchecked")) return false;
+    if (state.source && sourceKey(i) !== state.source) return false;
+    if (!ignoreCat && state.cat && i.category !== state.cat) return false;
+    if (state.q) {
+      const hay = [i.name, i.invoke, i.summary, i.description, (i.examples || []).join(" "), catById[i.category] && catById[i.category].label, i.plugin, i.path, WORLD[i.world], i.origin && i.origin.label, sourceShort(i)].join(" ").toLowerCase();
+      return state.q.split(/\s+/).filter(Boolean).every(w => hay.includes(w));
+    }
+    return true;
+  }
+
+  function renderCats() {
+    const counts = {};
+    all.forEach(i => { if (matches(i, true)) counts[i.category] = (counts[i.category] || 0) + 1; });
+    const cats = CAT_ORDER;
+    $("#cats").innerHTML = cats.map(c => {
+      const n = counts[c.id] || 0;
+      return `<button class="cat ${n ? "" : "is-empty"}" type="button" data-cat="${esc(c.id)}" aria-pressed="${state.cat === c.id}">
+        ${icon(c.id)}<span class="cat-text"><span class="cat-label">${esc(c.label)}</span><span class="cat-blurb">${esc(c.blurb)}</span></span>
+        <span class="cat-count">${n}</span></button>`;
+    }).join("");
+    $("#cat-sub").textContent = `${D.categories.length} domains. Select one to filter the list.`;
+  }
+
+  function renderTypes() {
+    const t = state.type; state.type = "all";
+    const base = all.filter(i => matches(i));
+    state.type = t;
+    const n = k => base.filter(i => k === "all" || i.kind === k).length;
+    $("#types").innerHTML = [["all", "All"], ["skill", "Skills"], ["plugin", "Plugins"], ["connector", "Connectors"]]
+      .map(([k, l]) => `<button type="button" data-type="${k}" aria-pressed="${state.type === k}">${l}<span class="c">${n(k)}</span></button>`).join("");
+  }
+
+  function renderList() {
+    const order = { plugin: 0, connector: 1, skill: 2 };
+    const rows = all.filter(i => matches(i)).sort((a, b) => state.q ? 0 :
+      (a.category.localeCompare(b.category) || order[a.kind] - order[b.kind] || a.name.localeCompare(b.name) || a.world.localeCompare(b.world)));
+    const bits = [];
+    if (state.plugin) { const p = byId[state.plugin]; bits.push(p ? p.name + " plugin" : "Plugin"); }
+    if (state.status) bits.push({ broken: "Not working", working: "Working", unchecked: "Not checked" }[state.status]);
+    if (state.source) bits.push(SOURCES[state.source]);
+    if (state.cat) bits.push(catById[state.cat].label);
+    $("#active").innerHTML = bits.length ? `Showing <strong>${bits.map(esc).join(" · ")}</strong> <button type="button" id="clear-cat">Clear</button>` : "";
+    if (!rows.length) {
+      $("#list").innerHTML = `<div class="empty-list"><strong>Nothing matches${state.q ? ` “${esc(state.q)}”` : ""}</strong>Try fewer words, or clear the filters.</div>`;
+      return;
+    }
+    const capped = !state.all && !state.cat && !state.q && !state.plugin && !state.status && !state.source && rows.length > PAGE;
+    const shown = capped ? rows.slice(0, PAGE) : rows;
+    $("#list").innerHTML = shown.map(i => `<button class="item" type="button" data-open="${esc(i.id)}">
+      ${icon(i.category)}
+      <span class="item-main">
+        <span class="item-top"><span class="item-name">${esc(i.kind === "skill" && i.world === "claude-code" && i.plugin ? i.invoke : i.name)}</span>
+        </span>
+        <span class="badges"><span class="b-type">${esc(kindLabel(i))}</span><span class="b-src ${esc(sourceKey(i))}">${esc(sourceShort(i))}</span>${state.world === "all" ? `<span class="world-tag ${i.world === "claude-code" ? "code" : ""}">${WORLD[i.world]}</span>` : ""}${i.origin && i.origin.confidence !== "unknown" && !i.plugin && i.kind !== "plugin" && sourceKey(i).startsWith("cc") ? `<span class="b-origin">${esc(i.origin.label)}</span>` : ""}</span>
+        <span class="item-sum">${esc(i.summary)}</span>
+      </span>
+      <span class="item-flags">${i.flags.map(pill).join("")}</span>
+    </button>`).join("") + (capped ? `<div class="more"><button type="button" class="btn" id="show-all">Show all ${rows.length}</button></div>` : "");
+  }
+
+  function renderGroups() {
+    const order = { duplicate: 0, overlap: 1, pair: 2 };
+    const lbl = { duplicate: "Duplicate", overlap: "Overlap", pair: "Often confused" };
+    const list = D.groups.map((g, gi) => ({ g, gi })).filter(({ g }) => state.world === "all" || g.world === state.world)
+      .sort((a, b) => order[a.g.kind] - order[b.g.kind] || a.g.world.localeCompare(b.g.world));
+    $("#groups").innerHTML = list.map(({ g, gi }) => {
+      const max = 6, mem = g.members.filter(m => byId[m]);
+      const shown = g.open ? mem : mem.slice(0, max);
+      return `<article class="group">
+        <div class="group-head"><h3>${esc(g.title)}</h3>${pill({ type: g.kind, label: lbl[g.kind] })}</div>
+        ${state.world === "all" ? `<span class="world-tag ${g.world === "claude-code" ? "code" : ""}">${WORLD[g.world]}</span>` : ""}
+        <div class="chips">${shown.map(m => `<button type="button" class="chip ${g.keep === m ? "keep" : ""}" data-open="${esc(m)}">${esc(byId[m].kind === "plugin" ? byId[m].name + " plugin" : byId[m].invoke || byId[m].name)}</button>`).join("")}
+        ${mem.length > shown.length ? `<button type="button" class="chip more-chip" data-expand="${gi}">+${mem.length - shown.length} more</button>` : ""}</div>
+        <p>${esc(g.note)}</p>
+      </article>`;
+    }).join("") || `<div class="panel"><h3>No overlaps found</h3></div>`;
+  }
+
+  function renderCC() {
+    if (cc) {
+      const c = cc.counts || {};
+      $("#cc-wrap").innerHTML = `<div class="sec-head"><h2 id="cc-h">Claude Code</h2><p>Scanned ${esc(fmtDate(cc.scannedAt))}.</p></div>
+        <div class="cc scanned">
+          <div>
+            <h3>${cc.count} items from your Mac</h3>
+            <p>${c.skill || 0} skills, ${c.command || 0} commands, ${c.agent || 0} subagents, ${c.plugin || 0} plugins and ${c.connector || 0} MCP servers.
+            ${cc.projects && cc.projects.length ? "Projects included: " + esc(cc.projects.join(", ")) + "." : "No project folders were included, so skills that live inside a project's .claude folder are missing."}</p>
+            <p>MCP server status isn't part of the scan. In Claude Code, <strong>/mcp</strong> shows which ones are connected.</p>
+            <button type="button" class="btn" data-world="claude-code">Show only Claude Code</button>
+          </div>
+          <div class="codebox"><pre><span class="cm"># rescan after changes, in Claude Code</span>
+/skill-atlas collect
+
+<span class="cm"># include every project under ~/Work</span>
+/skill-atlas collect with projects root ~/Work
+
+<span class="cm"># then attach ~/claude-code-inventory.json</span>
+<span class="cm"># in a chat and say "Refresh my Skill Atlas"</span></pre></div>
+        </div>`;
+      return;
+    }
+    $("#cc-wrap").innerHTML = `<div class="sec-head"><h2 id="cc-h">Claude Code</h2><p>Skills, plugins and MCP servers in Claude Code live on your computer, so this page can't see them yet.</p></div>
+      <div class="cc">
+        <div>
+          <h3>Add your Claude Code setup</h3>
+          <p>The scan reads names and descriptions only. API keys, tokens and environment values are never collected.</p>
+          <ol>
+            <li>Install the skill-atlas skill in <strong>~/.claude/skills</strong>.</li>
+            <li>In Claude Code, run the command shown here. It saves <strong>claude-code-inventory.json</strong> in your home folder.</li>
+            <li>Attach that file in a Claude chat and say <strong>“Refresh my Skill Atlas”</strong>.</li>
+          </ol>
+        </div>
+        <div class="codebox"><pre><span class="cm"># in Claude Code</span>
+/skill-atlas collect</pre></div>
+      </div>`;
+  }
+
+  function renderChanges() {
+    const c = D.changes;
+    if (!c) { $("#changes").textContent = "First scan. Next refresh will list what was added or removed."; return; }
+    const parts = [];
+    if (c.added && c.added.length) parts.push(`${c.added.length} added${c.note ? " (" + c.note.toLowerCase() + ")" : ""}`);
+    if (c.removed && c.removed.length) parts.push(`${c.removed.length} removed`);
+    $("#changes").textContent = parts.length ? `Since ${fmtDate(c.since)}: ${parts.join(", ")}.` : "No changes since last refresh.";
+  }
+
+  /* Sidebar */
+  const openGroups = { skills: true, plugins: false, connectors: false, sources: false };
+  try { Object.assign(openGroups, JSON.parse(localStorage.getItem("atlas-nav") || "{}")); } catch (e) {}
+  function currentView() {
+    if (state.anchor) return state.anchor;
+    if (state.source) return "src:" + state.source;
+    if (state.plugin) return "plugin:" + state.plugin;
+    if (state.type === "connector") return state.status ? "conn:" + state.status : "connectors";
+    if (state.type === "skill") return state.cat ? "cat:" + state.cat : "skills";
+    if (state.type === "plugin") return "plugins";
+    return "overview";
+  }
+  function navItem(view, ico, text, count, opts = {}) {
+    const cur = currentView() === view;
+    return `<button type="button" class="nav-item ${opts.empty ? "is-empty" : ""}" data-nav="${esc(view)}" aria-current="${cur}" title="${esc(text)}">
+      ${ico ? `<svg class="nav-ico"><use href="#i-${ico}"/></svg>` : ""}<span class="nav-text">${esc(text)}</span>
+      ${count != null ? `<span class="nav-count ${opts.warn ? "warn" : ""}">${esc(count)}</span>` : ""}
+      ${opts.chev ? `<svg class="chev"><use href="#i-chev"/></svg>` : ""}${opts.dot ? `<span class="rail-dot"></span>` : ""}</button>`;
+  }
+  function navGroup(key, view, ico, text, count, children, opts = {}) {
+    return `<div class="nav-group" data-group="${key}" data-open="${!!openGroups[key]}">${navItem(view, ico, text, count, Object.assign({ chev: true }, opts))}<div class="nav-sub">${children}</div></div>`;
+  }
+  function renderNav() {
+    const scope = all.filter(inWorld);
+    const sk = scope.filter(i => i.kind === "skill"), pl = scope.filter(i => i.kind === "plugin"), cn = scope.filter(i => i.kind === "connector");
+    const sc = {}; sk.forEach(s => sc[s.category] = (sc[s.category] || 0) + 1);
+    const cats = CAT_ORDER;
+    const br = cn.filter(i => broken.includes(i)), un = cn.filter(i => i.status === "unchecked"), ok = cn.filter(i => i.status === "connected");
+    const rv = dups.filter(inWorld).length + regs.filter(inWorld).length;
+    const pluginLabel = p => p.name + (state.world === "all" ? (p.world === "claude-code" ? " · Code" : " · App") : "");
+    $("#scope").innerHTML = hasCC ? [["all", "All"], ["claude-app", "Claude app"], ["claude-code", "Claude Code"]]
+      .map(([k, l]) => `<button type="button" data-world="${k}" aria-pressed="${state.world === k}">${l}</button>`).join("") : "";
+    $("#scope").hidden = !hasCC;
+    $("#nav").innerHTML =
+      navItem("overview", "overview", "Overview", null) +
+      `<div class="nav-label">Inventory</div>` +
+      navGroup("skills", "skills", "skill", "Skills", sk.length, cats.map(c => navItem("cat:" + c.id, null, c.label, sc[c.id] || 0, { empty: !sc[c.id] })).join("")) +
+      navGroup("plugins", "plugins", "plugin", "Plugins", pl.length, pl.slice().sort((a, b) => a.name.localeCompare(b.name) || a.world.localeCompare(b.world)).map(p => navItem("plugin:" + p.id, null, pluginLabel(p), p.skills.length)).join("")) +
+      navGroup("connectors", "connectors", "plug", "Connectors · MCP", cn.length,
+        (ok.length ? navItem("conn:working", null, "Working", ok.length) : "") +
+        (br.length ? navItem("conn:broken", null, "Not working", br.length, { warn: true }) : "") +
+        (un.length ? navItem("conn:unchecked", null, "Not checked (Claude Code)", un.length) : ""),
+        { dot: br.length > 0 }) +
+      `<div class="nav-label">Where from</div>` +
+      navGroup("sources", "sources", "source", "Sources", Object.keys(SOURCES).filter(k => scope.some(i => sourceKey(i) === k)).length,
+        Object.keys(SOURCES).map(k => [k, scope.filter(i => sourceKey(i) === k).length]).filter(([, n]) => n).map(([k, n]) => navItem("src:" + k, null, SOURCES[k], n)).join("")) +
+      `<div class="nav-label">Review</div>` +
+      navItem("disable", "alert", "Consider disabling", rv, { warn: rv > 0, dot: rv > 0 }) +
+      navItem("overlaps", "overlap", "Skills that overlap", D.groups.filter(g => state.world === "all" || g.world === state.world).length) +
+      navItem("claude-code", "terminal", "Claude Code scan", cc ? cc.count : "–");
+    $("#side-foot").textContent = "Refreshed " + fmtDate(D.generatedAt);
+  }
+
+  function showPage(pageView) {
+    document.querySelectorAll(".v-main").forEach(el => { el.hidden = pageView !== "main"; });
+    $("#view-disable").hidden = pageView !== "disable";
+    $("#view-overlaps").hidden = pageView !== "overlaps";
+  }
+  function go(view) {
+    Object.assign(state, { cat: null, type: "all", plugin: null, status: null, anchor: null, all: false, source: null });
+    const pageView = view === "disable" || view === "overlaps" ? view : "main";
+    showPage(pageView);
+    const scrollTo = id => { const el = document.getElementById(id); if (el) el.scrollIntoView({ block: "start" }); };
+    if (pageView !== "main") { state.anchor = view; renderAll(); window.scrollTo({ top: 0 }); }
+    else if (view === "overview") { state.q = ""; $("#q").value = ""; renderAll(); window.scrollTo({ top: 0 }); }
+    else if (view === "claude-code") { state.anchor = view; renderAll(); scrollTo("cc-wrap"); }
+    else {
+      if (view === "skills") state.type = "skill";
+      else if (view === "plugins") state.type = "plugin";
+      else if (view === "connectors") state.type = "connector";
+      else if (view.startsWith("cat:")) { state.type = "skill"; state.cat = view.slice(4); }
+      else if (view.startsWith("plugin:")) { state.plugin = view.slice(7); }
+      else if (view.startsWith("conn:")) { state.type = "connector"; state.status = view.slice(5); }
+      else if (view.startsWith("src:")) { state.source = view.slice(4); }
+      else if (view === "sources") { state.anchor = "sources"; }
+      renderAll(); scrollTo("browse");
+    }
+    closeMenu();
+  }
+  function setWorld(w) {
+    state.world = w;
+    try { localStorage.setItem("atlas-world", w); } catch (e) {}
+    if (state.plugin && byId[state.plugin] && !inWorld(byId[state.plugin])) state.plugin = null;
+    renderAll();
+  }
+
+  const shell = $("#shell");
+  try { if (localStorage.getItem("atlas-collapsed") === "1") shell.classList.add("collapsed"); } catch (e) {}
+  $("#collapse").addEventListener("click", () => {
+    const c = shell.classList.toggle("collapsed");
+    $("#collapse").setAttribute("aria-label", c ? "Expand sidebar" : "Collapse sidebar");
+    $("#collapse").title = c ? "Expand sidebar" : "Collapse sidebar";
+    try { localStorage.setItem("atlas-collapsed", c ? "1" : "0"); } catch (e) {}
+  });
+  /* Draggable sidebar width */
+  const SIDE_MIN = 220, SIDE_MAX = 460, SIDE_DEFAULT = 300;
+  const resizer = $("#resizer");
+  function setSideW(w, save) {
+    w = Math.round(Math.max(SIDE_MIN, Math.min(SIDE_MAX, w)));
+    shell.style.setProperty("--side-open-w", w + "px");
+    resizer.setAttribute("aria-valuenow", w);
+    if (save) { try { localStorage.setItem("atlas-side-w", String(w)); } catch (e) {} }
+  }
+  try { const w = parseInt(localStorage.getItem("atlas-side-w"), 10); if (w) setSideW(w, false); } catch (e) {}
+  resizer.setAttribute("aria-valuemin", SIDE_MIN); resizer.setAttribute("aria-valuemax", SIDE_MAX);
+  if (!resizer.hasAttribute("aria-valuenow")) resizer.setAttribute("aria-valuenow", SIDE_DEFAULT);
+  resizer.addEventListener("pointerdown", e => {
+    e.preventDefault();
+    resizer.setPointerCapture(e.pointerId);
+    shell.classList.add("resizing");
+    const left = $("#side").getBoundingClientRect().left;
+    const move = ev => setSideW(ev.clientX - left, false);
+    const up = ev => {
+      resizer.releasePointerCapture(e.pointerId);
+      resizer.removeEventListener("pointermove", move); resizer.removeEventListener("pointerup", up); resizer.removeEventListener("pointercancel", up);
+      shell.classList.remove("resizing");
+      setSideW(ev.clientX - left, true);
+    };
+    resizer.addEventListener("pointermove", move); resizer.addEventListener("pointerup", up); resizer.addEventListener("pointercancel", up);
+  });
+  resizer.addEventListener("dblclick", () => setSideW(SIDE_DEFAULT, true));
+  resizer.addEventListener("keydown", e => {
+    const cur = +resizer.getAttribute("aria-valuenow") || SIDE_DEFAULT;
+    if (e.key === "ArrowLeft") { e.preventDefault(); setSideW(cur - 16, true); }
+    if (e.key === "ArrowRight") { e.preventDefault(); setSideW(cur + 16, true); }
+  });
+  function openMenu() { shell.classList.add("menu-open"); $("#side-scrim").hidden = false; $("#menu").setAttribute("aria-expanded", "true"); }
+  function closeMenu() { shell.classList.remove("menu-open"); $("#side-scrim").hidden = true; $("#menu").setAttribute("aria-expanded", "false"); }
+  $("#menu").addEventListener("click", openMenu);
+  $("#side-scrim").addEventListener("click", closeMenu);
+  $("#nav").addEventListener("click", e => {
+    const b = e.target.closest("[data-nav]"); if (!b) return;
+    const grp = b.parentElement.classList.contains("nav-group") ? b.parentElement : null;
+    if (grp && !shell.classList.contains("collapsed")) {
+      const key = grp.dataset.group;
+      openGroups[key] = currentView() === b.dataset.nav ? !openGroups[key] : true;
+      try { localStorage.setItem("atlas-nav", JSON.stringify(openGroups)); } catch (err) {}
+    }
+    go(b.dataset.nav);
+  });
+
+  function renderAll() { renderHeader(); renderCats(); renderTypes(); renderList(); renderNav(); renderDisable(); renderGroups(); }
+
+  /* Drawer */
+  const drawer = $("#drawer"), scrim = $("#scrim");
+  let lastFocus = null;
+  const chipLabel = id => { const x = byId[id]; return x ? (x.kind === "plugin" ? x.name + " plugin" : x.invoke || x.name) + (x.world === "claude-code" && state.world === "all" ? " · Code" : "") : id; };
+  const linkList = ids => `<div class="chips">${ids.filter(id => byId[id]).map(id => `<button type="button" class="chip" data-open="${esc(id)}">${esc(chipLabel(id))}</button>`).join("")}</div>`;
+  function openItem(id) {
+    const i = byId[id]; if (!i) return;
+    if (!drawer.classList.contains("open")) lastFocus = document.activeElement;
+    const cat = catById[i.category];
+    let html = `<div class="d-head">${icon(i.category)}<div class="d-title"><div class="eyebrow">${esc(kindLabel(i))} · ${esc(cat ? cat.label : "")}</div><h2 id="d-name">${esc(i.name)}</h2><div class="d-meta">${esc(WORLD[i.world])} · ${esc(sourceShort(i))}${i.version ? " · v" + esc(i.version) : ""}</div></div>
+      <button class="x" type="button" id="d-close" aria-label="Close"><svg><use href="#i-close"/></svg></button></div><div class="d-body">`;
+    html += `<p class="d-sum">${esc(i.summary)}</p>`;
+    html += originCard(i);
+    if (i.flags.length) html += `<div class="chips">${i.flags.map(pill).join("")}</div>`;
+    if (i.kind === "connector") {
+      const st = i.status;
+      const msg = st === "connected" ? "<strong class=\"ui\">Connected.</strong> Claude can use its tools in chats where it's enabled."
+        : st === "unchecked" ? "<strong class=\"ui\">Status not checked.</strong> Claude Code doesn't share connection status with the scan. Run /mcp in Claude Code to see it."
+        : `<strong class="ui">${st === "needs_reconnect" ? "Needs reconnect" : "Not connected"}.</strong> Open Settings → Connectors to fix it. Until then Claude can't use it.`;
+      html += `<div class="note-box ${st === "connected" || st === "unchecked" ? "" : "dup"}"><p>${msg}</p>${!i.description && i.world === "claude-app" ? "<p>This connector publishes no description, so the summary above was written from its tool names.</p>" : ""}</div>`;
+    }
+    if (i.note) html += `<div class="note-box"><p>${esc(i.note)}</p></div>`;
+    if (i.examples && i.examples.length) {
+      html += `<div class="d-sec"><h4 class="eyebrow">Try saying</h4><ul class="try">${i.examples.map(e => `<li><span>“${esc(e)}”</span><button type="button" class="copy" data-copy="${esc(e)}">Copy</button></li>`).join("")}</ul></div>`;
+    }
+    if (i.kind === "skill" && i.invoke) {
+      html += `<div class="d-sec"><h4 class="eyebrow">Call it directly${i.world === "claude-code" ? " in Claude Code" : ""}</h4><div class="invoke"><code>/${esc(i.invoke)}</code><button type="button" class="copy" data-copy="/${esc(i.invoke)}">Copy</button></div></div>`;
+    }
+    (i.groups || []).forEach(gi => {
+      const g = D.groups[gi];
+      const others = g.members.filter(m => m !== i.id);
+      html += `<div class="d-sec"><h4 class="eyebrow">${g.kind === "duplicate" ? "Duplicate" : g.kind === "pair" ? "Often confused with" : "Overlaps with"}</h4><div class="note-box ${g.kind === "duplicate" ? "dup" : ""}"><p>${esc(g.note)}</p>${others.length <= 8 ? linkList(others) : `<p>${others.length} related items. See “Skills that overlap”.</p>`}</div></div>`;
+    });
+    if (i.alsoIn) html += `<div class="d-sec"><h4 class="eyebrow">Also installed in ${i.world === "claude-code" ? "the Claude app" : "Claude Code"}</h4><p class="raw" style="margin-bottom:8px">The Claude app and Claude Code keep separate setups, so this isn't a conflict.</p>${linkList([i.alsoIn])}</div>`;
+    const reg = i.flags.find(f => f.type === "region");
+    if (reg) html += `<div class="d-sec"><h4 class="eyebrow">May not apply to you</h4><div class="note-box reg"><p>${esc(reg.label)}. If you don't use these, disabling it keeps Claude from picking it by mistake.</p></div></div>`;
+    if (i.runs && i.runs.length) html += `<div class="d-sec"><h4 class="eyebrow">Runs these for you</h4>${linkList(i.runs)}</div>`;
+    if (i.runBy && i.runBy.length) html += `<div class="d-sec"><h4 class="eyebrow">Also runs inside</h4><p class="raw" style="margin-bottom:8px">Ask for the bigger job and this runs automatically. Call it alone for just this step.</p>${linkList(i.runBy)}</div>`;
+    if (i.kind === "plugin") html += `<div class="d-sec"><h4 class="eyebrow">In this plugin</h4>${i.skills.length ? linkList(i.skills) : `<p class="raw">No skills or commands. It may only add an MCP server or settings.</p>`}</div>`;
+    if (i.description) html += `<details class="d-sec"><summary>Original description</summary><p class="raw">${esc(i.description)}</p></details>`;
+    html += `</div>`;
+    drawer.innerHTML = html;
+    scrim.hidden = false;
+    requestAnimationFrame(() => { scrim.classList.add("open"); drawer.classList.add("open"); });
+    drawer.setAttribute("aria-hidden", "false");
+    $("#d-close").focus();
+  }
+  function closeDrawer() {
+    drawer.classList.remove("open"); scrim.classList.remove("open");
+    drawer.setAttribute("aria-hidden", "true");
+    setTimeout(() => { scrim.hidden = true; }, 220);
+    if (lastFocus && lastFocus.focus) lastFocus.focus();
+  }
+
+  /* Copy + toast */
+  let toastT;
+  function toast(msg) { const t = $("#toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove("show"), 2600); }
+  function copyText(text, okMsg) {
+    const fallback = () => {
+      const old = document.querySelector(".fallback"); if (old) old.remove();
+      const box = document.createElement("div"); box.className = "fallback";
+      box.innerHTML = `Copy this, then paste it into a Claude chat:<textarea rows="2" readonly id="fallback-text"></textarea>`;
+      box.querySelector("textarea").value = text; document.body.appendChild(box);
+      const ta = box.querySelector("textarea"); ta.focus(); ta.select();
+      setTimeout(() => box.remove(), 8000);
+    };
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(() => toast(okMsg), fallback);
+      else fallback();
+    } catch (e) { fallback(); }
+  }
+
+  /* Events */
+  document.addEventListener("click", e => {
+    const copy = e.target.closest("[data-copy]");
+    if (copy) { e.stopPropagation(); copyText(copy.dataset.copy, "Copied"); return; }
+    if (e.target.closest("#d-close")) { closeDrawer(); return; }
+    const world = e.target.closest("[data-world]");
+    if (world) { setWorld(world.dataset.world); return; }
+    const expand = e.target.closest("[data-expand]");
+    if (expand) { D.groups[+expand.dataset.expand].open = true; renderGroups(); return; }
+    const navBtn = e.target.closest("[data-nav]");
+    if (navBtn && !navBtn.closest("#nav")) { go(navBtn.dataset.nav); return; }
+    const open = e.target.closest("[data-open]");
+    if (open) { openItem(open.dataset.open); return; }
+    const cat = e.target.closest("[data-cat]");
+    if (cat) { state.anchor = null; state.cat = state.cat === cat.dataset.cat ? null : cat.dataset.cat; renderAll(); return; }
+    const type = e.target.closest("[data-type]");
+    if (type) { state.anchor = null; state.type = type.dataset.type; if (state.type !== "connector") state.status = null; renderAll(); return; }
+    if (e.target.closest("#clear-cat")) { Object.assign(state, { cat: null, plugin: null, status: null, anchor: null, source: null }); renderAll(); return; }
+    if (e.target.closest("#show-all")) { state.all = true; renderList(); return; }
+  });
+  scrim.addEventListener("click", closeDrawer);
+  $("#flagged").addEventListener("change", e => { state.flagged = e.target.checked; renderAll(); });
+  $("#q").addEventListener("input", e => { state.q = e.target.value.trim().toLowerCase(); state.anchor = null; renderAll(); });
+  $("#refresh").addEventListener("click", () => copyText(REFRESH_PROMPT, "Copied. Paste it into any Claude chat to refresh this page."));
+  document.addEventListener("keydown", e => {
+    if (e.key === "Escape" && drawer.classList.contains("open")) closeDrawer();
+    else if (e.key === "Escape" && shell.classList.contains("menu-open")) closeMenu();
+    if (e.key === "/" && !["INPUT", "TEXTAREA"].includes(document.activeElement.tagName)) { e.preventDefault(); $("#q").focus(); }
+  });
+
+  renderAll(); renderCC(); renderChanges();
+})();
+</script>
