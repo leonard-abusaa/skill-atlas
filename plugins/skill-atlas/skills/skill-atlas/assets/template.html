@@ -474,7 +474,7 @@ details[open] summary { margin-bottom: 8px; }
     <symbol id="i-collapse" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="4" width="17" height="16" rx="2"/><path d="M9 4v16M15.5 9.5L13 12l2.5 2.5"/></symbol>
     <symbol id="i-menu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
     <symbol id="i-source" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="2.2"/><circle cx="6" cy="18" r="2.2"/><circle cx="18" cy="12" r="2.2"/><path d="M6 8.2v7.6M8 6.8c4 .4 6.8 2.2 8 3.6M8 17.2c4-.4 6.8-2.2 8-3.6"/></symbol>
-    <symbol id="i-mark" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5l1.7 6.2 6.2-1.6-4.6 4.4 4.6 4.4-6.2-1.6L12 20.5l-1.7-6.2-6.2 1.6 4.6-4.4-4.6-4.4 6.2 1.6z"/></symbol>
+    <symbol id="i-mark" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"><path d="M3 6.5l6-2.5 6 2.5 6-2.5v13.5l-6 2.5-6-2.5-6 2.5z"/><path d="M9 4v13.5M15 6.5V20"/></symbol>
   </defs>
 </svg>
 
@@ -760,7 +760,7 @@ details[open] summary { margin-bottom: 8px; }
     state.type = t;
     const n = k => base.filter(i => k === "all" || i.kind === k).length;
     $("#types").innerHTML = [["all", "All"], ["skill", "Skills"], ["plugin", "Plugins"], ["connector", "Connectors"]]
-      .map(([k, l]) => `<button type="button" data-type="${k}" aria-pressed="${state.type === k}">${l}<span class="c">${n(k)}</span></button>`).join("");
+      .map(([typeId, label]) => `<button type="button" data-type="${typeId}" aria-pressed="${state.type === typeId}">${label}<span class="c">${n(typeId)}</span></button>`).join("");
   }
 
   function renderList() {
@@ -876,8 +876,8 @@ details[open] summary { margin-bottom: 8px; }
       ${count != null ? `<span class="nav-count ${opts.warn ? "warn" : ""}">${esc(count)}</span>` : ""}
       ${opts.chev ? `<svg class="chev"><use href="#i-chev"/></svg>` : ""}${opts.dot ? `<span class="rail-dot"></span>` : ""}</button>`;
   }
-  function navGroup(key, view, ico, text, count, children, opts = {}) {
-    return `<div class="nav-group" data-group="${key}" data-open="${!!openGroups[key]}">${navItem(view, ico, text, count, Object.assign({ chev: true }, opts))}<div class="nav-sub">${children}</div></div>`;
+  function navGroup(grp, view, ico, text, count, children, opts = {}) {
+    return `<div class="nav-group" data-group="${grp}" data-open="${!!openGroups[grp]}">${navItem(view, ico, text, count, Object.assign({ chev: true }, opts))}<div class="nav-sub">${children}</div></div>`;
   }
   function renderNav() {
     const scope = all.filter(inWorld);
@@ -888,7 +888,7 @@ details[open] summary { margin-bottom: 8px; }
     const rv = dups.filter(inWorld).length + regs.filter(inWorld).length;
     const pluginLabel = p => p.name + (state.world === "all" ? (p.world === "claude-code" ? " · Code" : " · App") : "");
     $("#scope").innerHTML = hasCC ? [["all", "All"], ["claude-app", "Claude app"], ["claude-code", "Claude Code"]]
-      .map(([k, l]) => `<button type="button" data-world="${k}" aria-pressed="${state.world === k}">${l}</button>`).join("") : "";
+      .map(([worldId, label]) => `<button type="button" data-world="${worldId}" aria-pressed="${state.world === worldId}">${label}</button>`).join("") : "";
     $("#scope").hidden = !hasCC;
     $("#nav").innerHTML =
       navItem("overview", "overview", "Overview", null) +

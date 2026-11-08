@@ -4,7 +4,7 @@ Skill Atlas builds a private dashboard of everything Claude can use for you: eve
 
 For each item it shows a plain one-line summary, example phrases that trigger it, the command to call it directly, and where it came from: built into Claude, uploaded by you, part of a plugin (with author and marketplace), or a standalone file, each with a confidence label. It also flags skills installed twice, skills that overlap, skills built for a country or tool you may not use, and connectors that need reconnecting. The dashboard only suggests; it never disables, uninstalls or reconnects anything.
 
-![Skill Atlas dashboard](https://raw.githubusercontent.com/leonard-abusaa/skill-atlas/main/docs/screenshot.png)
+![Skill Atlas dashboard](docs/screenshot.png)
 
 ## Use
 

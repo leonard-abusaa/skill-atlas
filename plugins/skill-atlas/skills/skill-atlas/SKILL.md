@@ -23,10 +23,10 @@ Files in this skill's folder (the folder this SKILL.md is in):
 1. Run the collector with Python 3 (`python3`; on Windows `python` or `py`):
 
    ```
-   python3 <skill folder>/scripts/collect_claude_code.py --project "$PWD"
+   python3 <skill folder>/scripts/collect_claude_code.py
    ```
 
-   If the user named a folder holding several projects, add `--projects-root <folder>`.
+   Run it from the project folder the user is working in; the script includes the current folder's `.claude/` by default. If the user named a folder holding several projects, add `--projects-root <folder>`.
 
 2. Show the summary line it prints and where it wrote the file (default `~/claude-code-inventory.json`).
 3. Next step, in one sentence: attach that file in a Claude app chat and say "Refresh my Skill Atlas". If you are able to publish artifacts here, offer to build the dashboard right away instead (Build mode, with only the Claude Code half).
