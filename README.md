@@ -85,7 +85,7 @@ The **Refresh** button on the dashboard copies the prompt. Paste it into any Cla
 
 ## Privacy
 
-The Claude Code collector (`scripts/collect_claude_code.py`):
+The Claude Code collector (`collect_claude_code.py`, shipped in `scripts/collect_claude_code.md`; source in `src/`):
 
 - is **read-only** and makes **no network calls**;
 - reads only names and descriptions from the top of skill, command and agent files, plus plugin and MCP configuration;
@@ -98,16 +98,23 @@ The dashboard is published as a private artifact in your own Claude account. Nob
 ## How it works
 
 ```
-plugins/skill-atlas/skills/skill-atlas/
-  SKILL.md                         instructions Claude follows (collect and build modes)
-  assets/template.html             the dashboard; the same for every user
-  assets/categories.json           the 14 fixed domains
-  scripts/collect_claude_code.py   read-only Claude Code scanner
-  scripts/render.py                validates the data and fills the template
-  reference/schema.md              the data format Claude writes
+plugins/skill-atlas/                      the plugin people install
+  .claude-plugin/plugin.json, icon.png
+  README.md                               listing description: what it runs, reads and sends
+  skills/skill-atlas/
+    SKILL.md                              instructions Claude follows (collect and build modes)
+    assets/template.md                    the dashboard template, inside a Markdown code block
+    assets/categories.json                the 14 fixed domains
+    scripts/collect_claude_code.md        read-only Claude Code scanner, inside a Markdown code block
+    scripts/render.md                     validator and renderer, inside a Markdown code block
+    reference/schema.md                   the data format Claude writes
+src/                                      editable sources of the template and scripts
+scripts/build.py                          rebuilds the Markdown bundle and dist/skill-atlas.zip from src/
 ```
 
-Claude gathers the inventory, writes `atlas-data.json` following `reference/schema.md`, and `render.py` validates it and injects it into the template. The template never changes per user, so the page looks the same for everyone and Claude doesn't spend effort redesigning it.
+The plugin contains only Markdown, JSON and images. Anthropic's directory accepts only those file types from publishers it hasn't verified, so the HTML template and the two Python scripts ship inside Markdown code blocks. The first thing the skill does in a conversation is extract them into a temporary folder; the extracted files are identical to the ones in `src/`.
+
+Claude then gathers the inventory, writes `atlas-data.json` following `reference/schema.md`, and `render.py` validates it and injects it into the template. The template never changes per user, so the page looks the same for everyone and Claude doesn't spend effort redesigning it.
 
 On a refresh, Claude reuses the summaries and categories it wrote last time for anything unchanged, so refreshes are much cheaper than the first build.
 
@@ -121,17 +128,22 @@ On a refresh, Claude reuses the summaries and categories it wrote last time for 
 
 ## Development
 
-Rebuild the upload zip after changing the skill:
+Edit the template and scripts in `src/`, never the Markdown copies in the plugin folder. Then rebuild the bundle and the upload zip:
 
 ```
-./scripts/package.sh
+python3 scripts/build.py
 ```
+
+The build also fails if the plugin folder contains a file type the directory doesn't accept.
 
 Validate the plugin and marketplace:
 
 ```
+claude plugin validate --strict plugins/skill-atlas
 claude plugin validate .
 ```
+
+Raise `version` in `plugins/skill-atlas/.claude-plugin/plugin.json` with every release.
 
 ## License
 
