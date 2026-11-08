@@ -23,11 +23,15 @@ Claude reads the description of every enabled skill at the start of each convers
 
 ### Claude app (claude.ai, desktop)
 
-Custom skills need code execution turned on: **Settings → Capabilities → Code execution and file creation**.
+Add this repository as a plugin marketplace, then install from it. No downloads, and updates come straight from GitHub.
 
-1. Download [`dist/skill-atlas.zip`](dist/skill-atlas.zip).
-2. Go to **Customize → Skills**, click **+**, then **Create skill → Upload a skill**, and choose the zip.
-3. Make sure the skill is switched on.
+1. Open **Customize → Plugins**, click **Add**, then **Add marketplace → Add from a repository**.
+2. Enter `leonard-abusaa/skill-atlas`.
+3. Install **Skill Atlas** from the new marketplace.
+
+A plugin you add in the Claude app also loads in Claude Code when you're signed in to the same account, so one install covers both.
+
+Prefer a single skill instead? Download [`dist/skill-atlas.zip`](dist/skill-atlas.zip) and upload it under **Customize → Skills → + → Create skill → Upload a skill**. Custom skills need **Settings → Capabilities → Code execution and file creation** turned on.
 
 ### Claude Code
 
@@ -66,7 +70,7 @@ Claude lists your skills, plugins and connectors, writes the summaries and check
 
 **To include Claude Code**, the Claude app can't see your computer's Claude Code folders, so there's one extra step:
 
-1. In Claude Code, from a project folder, run `/skill-atlas collect` (or `/skill-atlas:skill-atlas collect` if you installed the plugin). It writes `~/claude-code-inventory.json`.
+1. In Claude Code, from a project folder, run `/skill-atlas:skill-atlas collect` (or `/skill-atlas collect` if you installed it as a standalone skill). It writes `~/claude-code-inventory.json`.
 2. In the Claude app, attach that file and say "Refresh my Skill Atlas".
 
 You can also build the dashboard entirely inside Claude Code. Where Claude Code can't publish artifacts, it saves `skill-atlas.html` in your home folder and opens it in your browser.
