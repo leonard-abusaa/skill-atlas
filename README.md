@@ -87,7 +87,6 @@ Claude lists your skills, plugins and connectors, writes the summaries and check
 
 You can also build the dashboard entirely inside Claude Code. Where Claude Code can't publish artifacts, it saves `skill-atlas.html` in your home folder and opens it in your browser.
 
-The **Refresh** button on the dashboard copies the prompt. Paste it into any Claude chat.
 
 ## Privacy
 

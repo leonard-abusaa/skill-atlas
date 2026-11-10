@@ -188,6 +188,8 @@ h1 { font-size: clamp(30px, 4.4vw, 42px); font-weight: 600; line-height: 1.1; }
 .btn.primary { background: var(--fg); color: var(--bg); border-color: var(--fg); }
 .btn.primary:hover { background: var(--accent-ink); border-color: var(--accent-ink); color: #fff; }
 .btn svg { width: 16px; height: 16px; }
+.howto { margin: 0; font-family: var(--font-head); font-size: 12.5px; color: var(--muted); width: 100%; }
+.howto strong { color: var(--fg); font-weight: 500; }
 
 /* Status strip */
 .strip {
@@ -517,7 +519,7 @@ details[open] summary { margin-bottom: 8px; }
         <input id="q" type="search" placeholder="What do you want to do?" autocomplete="off">
         <kbd>/</kbd>
       </label>
-      <button class="btn primary" id="refresh" type="button"><svg><use href="#i-refresh"/></svg>Refresh</button>
+      <p class="howto">To update, say <strong>“Refresh my Skill Atlas”</strong> in any Claude chat.</p>
     </div>
   </header>
 
@@ -581,7 +583,6 @@ details[open] summary { margin-bottom: 8px; }
   const icon = cat => `<span class="ico" aria-hidden="true"><svg><use href="#i-${esc(cat)}"/></svg></span>`;
   const KIND = { skill: "Skill", plugin: "Plugin", connector: "Connector" };
   const WORLD = { "claude-app": "Claude app", "claude-code": "Claude Code" };
-  const REFRESH_PROMPT = "Refresh my Skill Atlas";
   const PAGE = 15;
   const hasCC = !!D.claudeCode;
 
@@ -1103,7 +1104,6 @@ details[open] summary { margin-bottom: 8px; }
   scrim.addEventListener("click", closeDrawer);
   $("#flagged").addEventListener("change", e => { state.flagged = e.target.checked; renderAll(); });
   $("#q").addEventListener("input", e => { state.q = e.target.value.trim().toLowerCase(); state.anchor = null; renderAll(); });
-  $("#refresh").addEventListener("click", () => copyText(REFRESH_PROMPT, "Copied. Paste it into any Claude chat to refresh this page."));
   document.addEventListener("keydown", e => {
     if (e.key === "Escape" && drawer.classList.contains("open")) closeDrawer();
     else if (e.key === "Escape" && shell.classList.contains("menu-open")) closeMenu();
